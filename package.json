@@ -1,0 +1,33 @@
+{
+  "name": "@scom/oswap-project-bridge-contract",
+  "version": "0.1.0",
+  "description": "",
+  "main": "lib/index.js",
+  "plugin": "dist/index.js",
+  "pluginTypes": "pluginTypes/index.d.ts",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "build": "rm -rf lib && rm -rf dist && rm -rf types && npm run build:contracts && npm run build:lib && npm run build:dist",
+    "build:contracts": "rm -rf src/contracts && npx @ijstech/compiler",
+    "build:dist": "npx @ijstech/compiler",
+    "build:lib": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ijstech/eth-contract": "^0.1.4"
+  },
+  "devDependencies": {
+    "@ijstech/cli": "^0.1.26",
+    "@ijstech/compiler": "^0.1.55",
+    "@ijstech/eth-wallet": "^0.1.35",
+    "@types/node": "18.15",
+    "@types/mocha": "9.1.1",
+    "ganache": "7.4.0",
+    "ts-node": "10.5.0",
+    "typescript": "5.0.4",
+    "mocha": "9.2.0",
+    "@openzeppelin/contracts": "4.9.3"
+  }
+}
