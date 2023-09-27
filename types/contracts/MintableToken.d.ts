@@ -28,12 +28,12 @@ export interface IMintParams {
     amount: number | BigNumber;
 }
 export interface ITransferParams {
-    to: string;
+    recipient: string;
     amount: number | BigNumber;
 }
 export interface ITransferFromParams {
-    from: string;
-    to: string;
+    sender: string;
+    recipient: string;
     amount: number | BigNumber;
 }
 export declare class MintableToken extends _Contract {

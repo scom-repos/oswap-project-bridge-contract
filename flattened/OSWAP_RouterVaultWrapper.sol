@@ -4,68 +4,6 @@
 pragma solidity ^0.8.0;
 
 /**
- * @dev Contract module that helps prevent reentrant calls to a function.
- *
- * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
- * available, which can be applied to functions to make sure there are no nested
- * (reentrant) calls to them.
- *
- * Note that because there is a single `nonReentrant` guard, functions marked as
- * `nonReentrant` may not call one another. This can be worked around by making
- * those functions `private`, and then adding `external` `nonReentrant` entry
- * points to them.
- *
- * TIP: If you would like to learn more about reentrancy and alternative ways
- * to protect against it, check out our blog post
- * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
- */
-abstract contract ReentrancyGuard {
-    // Booleans are more expensive than uint256 or any type that takes up a full
-    // word because each write operation emits an extra SLOAD to first read the
-    // slot's contents, replace the bits taken up by the boolean, and then write
-    // back. This is the compiler's defense against contract upgrades and
-    // pointer aliasing, and it cannot be disabled.
-
-    // The values being non-zero value makes deployment a bit more expensive,
-    // but in exchange the refund on every call to nonReentrant will be lower in
-    // amount. Since refunds are capped to a percentage of the total
-    // transaction's gas, it is best to keep them low in cases like this one, to
-    // increase the likelihood of the full refund coming into effect.
-    uint256 private constant _NOT_ENTERED = 1;
-    uint256 private constant _ENTERED = 2;
-
-    uint256 private _status;
-
-    constructor() {
-        _status = _NOT_ENTERED;
-    }
-
-    /**
-     * @dev Prevents a contract from calling itself, directly or indirectly.
-     * Calling a `nonReentrant` function from another `nonReentrant`
-     * function is not supported. It is possible to prevent this from happening
-     * by making the `nonReentrant` function external, and make it call a
-     * `private` function that does the actual work.
-     */
-    modifier nonReentrant() {
-        // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
-
-        // Any calls to nonReentrant after this point will fail
-        _status = _ENTERED;
-
-        _;
-
-        // By storing the original value once again, a refund is triggered (see
-        // https://eips.ethereum.org/EIPS/eip-2200)
-        _status = _NOT_ENTERED;
-    }
-}
-
-
-pragma solidity ^0.8.0;
-
-/**
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
 interface IERC20 {
@@ -453,225 +391,6 @@ library SafeERC20 {
             // Return data is optional
             require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
         }
-    }
-}
-
-
-pragma solidity ^0.8.0;
-
-/**
- * @dev Elliptic Curve Digital Signature Algorithm (ECDSA) operations.
- *
- * These functions can be used to verify that a message was signed by the holder
- * of the private keys of a given address.
- */
-library ECDSA {
-    enum RecoverError {
-        NoError,
-        InvalidSignature,
-        InvalidSignatureLength,
-        InvalidSignatureS,
-        InvalidSignatureV
-    }
-
-    function _throwError(RecoverError error) private pure {
-        if (error == RecoverError.NoError) {
-            return; // no error: do nothing
-        } else if (error == RecoverError.InvalidSignature) {
-            revert("ECDSA: invalid signature");
-        } else if (error == RecoverError.InvalidSignatureLength) {
-            revert("ECDSA: invalid signature length");
-        } else if (error == RecoverError.InvalidSignatureS) {
-            revert("ECDSA: invalid signature 's' value");
-        } else if (error == RecoverError.InvalidSignatureV) {
-            revert("ECDSA: invalid signature 'v' value");
-        }
-    }
-
-    /**
-     * @dev Returns the address that signed a hashed message (`hash`) with
-     * `signature` or error string. This address can then be used for verification purposes.
-     *
-     * The `ecrecover` EVM opcode allows for malleable (non-unique) signatures:
-     * this function rejects them by requiring the `s` value to be in the lower
-     * half order, and the `v` value to be either 27 or 28.
-     *
-     * IMPORTANT: `hash` _must_ be the result of a hash operation for the
-     * verification to be secure: it is possible to craft signatures that
-     * recover to arbitrary addresses for non-hashed data. A safe way to ensure
-     * this is by receiving a hash of the original message (which may otherwise
-     * be too long), and then calling {toEthSignedMessageHash} on it.
-     *
-     * Documentation for signature generation:
-     * - with https://web3js.readthedocs.io/en/v1.3.4/web3-eth-accounts.html#sign[Web3.js]
-     * - with https://docs.ethers.io/v5/api/signer/#Signer-signMessage[ethers]
-     *
-     * _Available since v4.3._
-     */
-    function tryRecover(bytes32 hash, bytes memory signature) internal pure returns (address, RecoverError) {
-        // Check the signature length
-        // - case 65: r,s,v signature (standard)
-        // - case 64: r,vs signature (cf https://eips.ethereum.org/EIPS/eip-2098) _Available since v4.1._
-        if (signature.length == 65) {
-            bytes32 r;
-            bytes32 s;
-            uint8 v;
-            // ecrecover takes the signature parameters, and the only way to get them
-            // currently is to use assembly.
-            assembly {
-                r := mload(add(signature, 0x20))
-                s := mload(add(signature, 0x40))
-                v := byte(0, mload(add(signature, 0x60)))
-            }
-            return tryRecover(hash, v, r, s);
-        } else if (signature.length == 64) {
-            bytes32 r;
-            bytes32 vs;
-            // ecrecover takes the signature parameters, and the only way to get them
-            // currently is to use assembly.
-            assembly {
-                r := mload(add(signature, 0x20))
-                vs := mload(add(signature, 0x40))
-            }
-            return tryRecover(hash, r, vs);
-        } else {
-            return (address(0), RecoverError.InvalidSignatureLength);
-        }
-    }
-
-    /**
-     * @dev Returns the address that signed a hashed message (`hash`) with
-     * `signature`. This address can then be used for verification purposes.
-     *
-     * The `ecrecover` EVM opcode allows for malleable (non-unique) signatures:
-     * this function rejects them by requiring the `s` value to be in the lower
-     * half order, and the `v` value to be either 27 or 28.
-     *
-     * IMPORTANT: `hash` _must_ be the result of a hash operation for the
-     * verification to be secure: it is possible to craft signatures that
-     * recover to arbitrary addresses for non-hashed data. A safe way to ensure
-     * this is by receiving a hash of the original message (which may otherwise
-     * be too long), and then calling {toEthSignedMessageHash} on it.
-     */
-    function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
-        (address recovered, RecoverError error) = tryRecover(hash, signature);
-        _throwError(error);
-        return recovered;
-    }
-
-    /**
-     * @dev Overload of {ECDSA-tryRecover} that receives the `r` and `vs` short-signature fields separately.
-     *
-     * See https://eips.ethereum.org/EIPS/eip-2098[EIP-2098 short signatures]
-     *
-     * _Available since v4.3._
-     */
-    function tryRecover(
-        bytes32 hash,
-        bytes32 r,
-        bytes32 vs
-    ) internal pure returns (address, RecoverError) {
-        bytes32 s;
-        uint8 v;
-        assembly {
-            s := and(vs, 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
-            v := add(shr(255, vs), 27)
-        }
-        return tryRecover(hash, v, r, s);
-    }
-
-    /**
-     * @dev Overload of {ECDSA-recover} that receives the `r and `vs` short-signature fields separately.
-     *
-     * _Available since v4.2._
-     */
-    function recover(
-        bytes32 hash,
-        bytes32 r,
-        bytes32 vs
-    ) internal pure returns (address) {
-        (address recovered, RecoverError error) = tryRecover(hash, r, vs);
-        _throwError(error);
-        return recovered;
-    }
-
-    /**
-     * @dev Overload of {ECDSA-tryRecover} that receives the `v`,
-     * `r` and `s` signature fields separately.
-     *
-     * _Available since v4.3._
-     */
-    function tryRecover(
-        bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal pure returns (address, RecoverError) {
-        // EIP-2 still allows signature malleability for ecrecover(). Remove this possibility and make the signature
-        // unique. Appendix F in the Ethereum Yellow paper (https://ethereum.github.io/yellowpaper/paper.pdf), defines
-        // the valid range for s in (301): 0 < s < secp256k1n ÷ 2 + 1, and for v in (302): v ∈ {27, 28}. Most
-        // signatures from current libraries generate a unique signature with an s-value in the lower half order.
-        //
-        // If your library generates malleable signatures, such as s-values in the upper range, calculate a new s-value
-        // with 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - s1 and flip v from 27 to 28 or
-        // vice versa. If your library also generates signatures with 0/1 for v instead 27/28, add 27 to v to accept
-        // these malleable signatures as well.
-        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
-            return (address(0), RecoverError.InvalidSignatureS);
-        }
-        if (v != 27 && v != 28) {
-            return (address(0), RecoverError.InvalidSignatureV);
-        }
-
-        // If the signature is valid (and not malleable), return the signer address
-        address signer = ecrecover(hash, v, r, s);
-        if (signer == address(0)) {
-            return (address(0), RecoverError.InvalidSignature);
-        }
-
-        return (signer, RecoverError.NoError);
-    }
-
-    /**
-     * @dev Overload of {ECDSA-recover} that receives the `v`,
-     * `r` and `s` signature fields separately.
-     */
-    function recover(
-        bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal pure returns (address) {
-        (address recovered, RecoverError error) = tryRecover(hash, v, r, s);
-        _throwError(error);
-        return recovered;
-    }
-
-    /**
-     * @dev Returns an Ethereum Signed Message, created from a `hash`. This
-     * produces hash corresponding to the one signed with the
-     * https://eth.wiki/json-rpc/API#eth_sign[`eth_sign`]
-     * JSON-RPC method as part of EIP-191.
-     *
-     * See {recover}.
-     */
-    function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32) {
-        // 32 is the length in bytes of hash,
-        // enforced by the type signature above
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
-    }
-
-    /**
-     * @dev Returns an Ethereum Signed Typed Data, created from a
-     * `domainSeparator` and a `structHash`. This produces hash corresponding
-     * to the one signed with the
-     * https://eips.ethereum.org/EIPS/eip-712[`eth_signTypedData`]
-     * JSON-RPC method as part of EIP-712.
-     *
-     * See {recover}.
-     */
-    function toTypedDataHash(bytes32 domainSeparator, bytes32 structHash) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
     }
 }
 
@@ -1096,6 +815,80 @@ interface IOSWAP_BridgeVault is IERC20, IERC20Metadata {
 
 pragma solidity 0.8.6;
 
+interface IOSWAP_HybridRouter2 {
+
+    function registry() external view returns (address);
+    function WETH() external view returns (address);
+
+    function getPathIn(address[] calldata pair, address tokenIn) external view returns (address[] memory path);
+    function getPathOut(address[] calldata pair, address tokenOut) external view returns (address[] memory path);
+
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata pair,
+        address tokenIn,
+        address to,
+        uint deadline,
+        bytes calldata data
+    ) external returns (address[] memory path, uint[] memory amounts);
+    function swapTokensForExactTokens(
+        uint amountOut,
+        uint amountInMax,
+        address[] calldata pair,
+        address tokenOut,
+        address to,
+        uint deadline,
+        bytes calldata data
+    ) external returns (address[] memory path, uint[] memory amounts);
+    function swapExactETHForTokens(uint amountOutMin, address[] calldata pair, address to, uint deadline, bytes calldata data)
+        external
+        payable
+        returns (address[] memory path, uint[] memory amounts);
+    function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata pair, address to, uint deadline, bytes calldata data)
+        external
+        returns (address[] memory path, uint[] memory amounts);
+    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata pair, address to, uint deadline, bytes calldata data)
+        external
+        returns (address[] memory path, uint[] memory amounts);
+    function swapETHForExactTokens(uint amountOut, address[] calldata pair, address to, uint deadline, bytes calldata data)
+        external
+        payable
+        returns (address[] memory path, uint[] memory amounts);
+
+    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address tokenIn,
+        address to,
+        uint deadline,
+        bytes calldata data
+    ) external;
+    function swapExactETHForTokensSupportingFeeOnTransferTokens(
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline,
+        bytes calldata data
+    ) external payable;
+    function swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline,
+        bytes calldata data
+    ) external;
+
+    function getAmountsInStartsWith(uint amountOut, address[] calldata pair, address tokenIn, bytes calldata data) external view returns (uint[] memory amounts);
+    function getAmountsInEndsWith(uint amountOut, address[] calldata pair, address tokenOut, bytes calldata data) external view returns (uint[] memory amounts);
+    function getAmountsOutStartsWith(uint amountIn, address[] calldata pair, address tokenIn, bytes calldata data) external view returns (uint[] memory amounts);
+    function getAmountsOutEndsWith(uint amountIn, address[] calldata pair, address tokenOut, bytes calldata data) external view returns (uint[] memory amounts);
+}
+
+pragma solidity 0.8.6;
+
 contract Authorization {
     address public owner;
     address public newOwner;
@@ -1284,6 +1077,557 @@ contract OSWAP_ConfigStore is Authorization {
     }
     function getRebalanceParams(IERC20 asset) external view returns (address,address,address) {
         return (rebalancer, priceOracle[govToken], priceOracle[asset]);
+    }
+}
+
+pragma solidity ^0.8.0;
+
+/**
+ * @dev Elliptic Curve Digital Signature Algorithm (ECDSA) operations.
+ *
+ * These functions can be used to verify that a message was signed by the holder
+ * of the private keys of a given address.
+ */
+library ECDSA {
+    enum RecoverError {
+        NoError,
+        InvalidSignature,
+        InvalidSignatureLength,
+        InvalidSignatureS,
+        InvalidSignatureV
+    }
+
+    function _throwError(RecoverError error) private pure {
+        if (error == RecoverError.NoError) {
+            return; // no error: do nothing
+        } else if (error == RecoverError.InvalidSignature) {
+            revert("ECDSA: invalid signature");
+        } else if (error == RecoverError.InvalidSignatureLength) {
+            revert("ECDSA: invalid signature length");
+        } else if (error == RecoverError.InvalidSignatureS) {
+            revert("ECDSA: invalid signature 's' value");
+        } else if (error == RecoverError.InvalidSignatureV) {
+            revert("ECDSA: invalid signature 'v' value");
+        }
+    }
+
+    /**
+     * @dev Returns the address that signed a hashed message (`hash`) with
+     * `signature` or error string. This address can then be used for verification purposes.
+     *
+     * The `ecrecover` EVM opcode allows for malleable (non-unique) signatures:
+     * this function rejects them by requiring the `s` value to be in the lower
+     * half order, and the `v` value to be either 27 or 28.
+     *
+     * IMPORTANT: `hash` _must_ be the result of a hash operation for the
+     * verification to be secure: it is possible to craft signatures that
+     * recover to arbitrary addresses for non-hashed data. A safe way to ensure
+     * this is by receiving a hash of the original message (which may otherwise
+     * be too long), and then calling {toEthSignedMessageHash} on it.
+     *
+     * Documentation for signature generation:
+     * - with https://web3js.readthedocs.io/en/v1.3.4/web3-eth-accounts.html#sign[Web3.js]
+     * - with https://docs.ethers.io/v5/api/signer/#Signer-signMessage[ethers]
+     *
+     * _Available since v4.3._
+     */
+    function tryRecover(bytes32 hash, bytes memory signature) internal pure returns (address, RecoverError) {
+        // Check the signature length
+        // - case 65: r,s,v signature (standard)
+        // - case 64: r,vs signature (cf https://eips.ethereum.org/EIPS/eip-2098) _Available since v4.1._
+        if (signature.length == 65) {
+            bytes32 r;
+            bytes32 s;
+            uint8 v;
+            // ecrecover takes the signature parameters, and the only way to get them
+            // currently is to use assembly.
+            assembly {
+                r := mload(add(signature, 0x20))
+                s := mload(add(signature, 0x40))
+                v := byte(0, mload(add(signature, 0x60)))
+            }
+            return tryRecover(hash, v, r, s);
+        } else if (signature.length == 64) {
+            bytes32 r;
+            bytes32 vs;
+            // ecrecover takes the signature parameters, and the only way to get them
+            // currently is to use assembly.
+            assembly {
+                r := mload(add(signature, 0x20))
+                vs := mload(add(signature, 0x40))
+            }
+            return tryRecover(hash, r, vs);
+        } else {
+            return (address(0), RecoverError.InvalidSignatureLength);
+        }
+    }
+
+    /**
+     * @dev Returns the address that signed a hashed message (`hash`) with
+     * `signature`. This address can then be used for verification purposes.
+     *
+     * The `ecrecover` EVM opcode allows for malleable (non-unique) signatures:
+     * this function rejects them by requiring the `s` value to be in the lower
+     * half order, and the `v` value to be either 27 or 28.
+     *
+     * IMPORTANT: `hash` _must_ be the result of a hash operation for the
+     * verification to be secure: it is possible to craft signatures that
+     * recover to arbitrary addresses for non-hashed data. A safe way to ensure
+     * this is by receiving a hash of the original message (which may otherwise
+     * be too long), and then calling {toEthSignedMessageHash} on it.
+     */
+    function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
+        (address recovered, RecoverError error) = tryRecover(hash, signature);
+        _throwError(error);
+        return recovered;
+    }
+
+    /**
+     * @dev Overload of {ECDSA-tryRecover} that receives the `r` and `vs` short-signature fields separately.
+     *
+     * See https://eips.ethereum.org/EIPS/eip-2098[EIP-2098 short signatures]
+     *
+     * _Available since v4.3._
+     */
+    function tryRecover(
+        bytes32 hash,
+        bytes32 r,
+        bytes32 vs
+    ) internal pure returns (address, RecoverError) {
+        bytes32 s;
+        uint8 v;
+        assembly {
+            s := and(vs, 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
+            v := add(shr(255, vs), 27)
+        }
+        return tryRecover(hash, v, r, s);
+    }
+
+    /**
+     * @dev Overload of {ECDSA-recover} that receives the `r and `vs` short-signature fields separately.
+     *
+     * _Available since v4.2._
+     */
+    function recover(
+        bytes32 hash,
+        bytes32 r,
+        bytes32 vs
+    ) internal pure returns (address) {
+        (address recovered, RecoverError error) = tryRecover(hash, r, vs);
+        _throwError(error);
+        return recovered;
+    }
+
+    /**
+     * @dev Overload of {ECDSA-tryRecover} that receives the `v`,
+     * `r` and `s` signature fields separately.
+     *
+     * _Available since v4.3._
+     */
+    function tryRecover(
+        bytes32 hash,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal pure returns (address, RecoverError) {
+        // EIP-2 still allows signature malleability for ecrecover(). Remove this possibility and make the signature
+        // unique. Appendix F in the Ethereum Yellow paper (https://ethereum.github.io/yellowpaper/paper.pdf), defines
+        // the valid range for s in (301): 0 < s < secp256k1n ÷ 2 + 1, and for v in (302): v ∈ {27, 28}. Most
+        // signatures from current libraries generate a unique signature with an s-value in the lower half order.
+        //
+        // If your library generates malleable signatures, such as s-values in the upper range, calculate a new s-value
+        // with 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - s1 and flip v from 27 to 28 or
+        // vice versa. If your library also generates signatures with 0/1 for v instead 27/28, add 27 to v to accept
+        // these malleable signatures as well.
+        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
+            return (address(0), RecoverError.InvalidSignatureS);
+        }
+        if (v != 27 && v != 28) {
+            return (address(0), RecoverError.InvalidSignatureV);
+        }
+
+        // If the signature is valid (and not malleable), return the signer address
+        address signer = ecrecover(hash, v, r, s);
+        if (signer == address(0)) {
+            return (address(0), RecoverError.InvalidSignature);
+        }
+
+        return (signer, RecoverError.NoError);
+    }
+
+    /**
+     * @dev Overload of {ECDSA-recover} that receives the `v`,
+     * `r` and `s` signature fields separately.
+     */
+    function recover(
+        bytes32 hash,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal pure returns (address) {
+        (address recovered, RecoverError error) = tryRecover(hash, v, r, s);
+        _throwError(error);
+        return recovered;
+    }
+
+    /**
+     * @dev Returns an Ethereum Signed Message, created from a `hash`. This
+     * produces hash corresponding to the one signed with the
+     * https://eth.wiki/json-rpc/API#eth_sign[`eth_sign`]
+     * JSON-RPC method as part of EIP-191.
+     *
+     * See {recover}.
+     */
+    function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32) {
+        // 32 is the length in bytes of hash,
+        // enforced by the type signature above
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+    }
+
+    /**
+     * @dev Returns an Ethereum Signed Typed Data, created from a
+     * `domainSeparator` and a `structHash`. This produces hash corresponding
+     * to the one signed with the
+     * https://eips.ethereum.org/EIPS/eip-712[`eth_signTypedData`]
+     * JSON-RPC method as part of EIP-712.
+     *
+     * See {recover}.
+     */
+    function toTypedDataHash(bytes32 domainSeparator, bytes32 structHash) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
+    }
+}
+
+
+pragma solidity ^0.8.0;
+
+/**
+ * @dev Contract module that helps prevent reentrant calls to a function.
+ *
+ * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
+ * available, which can be applied to functions to make sure there are no nested
+ * (reentrant) calls to them.
+ *
+ * Note that because there is a single `nonReentrant` guard, functions marked as
+ * `nonReentrant` may not call one another. This can be worked around by making
+ * those functions `private`, and then adding `external` `nonReentrant` entry
+ * points to them.
+ *
+ * TIP: If you would like to learn more about reentrancy and alternative ways
+ * to protect against it, check out our blog post
+ * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
+ */
+abstract contract ReentrancyGuard {
+    // Booleans are more expensive than uint256 or any type that takes up a full
+    // word because each write operation emits an extra SLOAD to first read the
+    // slot's contents, replace the bits taken up by the boolean, and then write
+    // back. This is the compiler's defense against contract upgrades and
+    // pointer aliasing, and it cannot be disabled.
+
+    // The values being non-zero value makes deployment a bit more expensive,
+    // but in exchange the refund on every call to nonReentrant will be lower in
+    // amount. Since refunds are capped to a percentage of the total
+    // transaction's gas, it is best to keep them low in cases like this one, to
+    // increase the likelihood of the full refund coming into effect.
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+
+    uint256 private _status;
+
+    constructor() {
+        _status = _NOT_ENTERED;
+    }
+
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * Calling a `nonReentrant` function from another `nonReentrant`
+     * function is not supported. It is possible to prevent this from happening
+     * by making the `nonReentrant` function external, and make it call a
+     * `private` function that does the actual work.
+     */
+    modifier nonReentrant() {
+        // On the first call to nonReentrant, _notEntered will be true
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+
+        // Any calls to nonReentrant after this point will fail
+        _status = _ENTERED;
+
+        _;
+
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = _NOT_ENTERED;
+    }
+}
+
+pragma solidity 0.8.6;
+
+
+
+
+
+
+
+
+contract OSWAP_BridgeVaultTrollRegistry is ReentrancyGuard {
+    using SafeERC20 for IERC20;
+    using ECDSA for bytes32;
+
+
+    modifier onlyOwner {
+        require(msg.sender == owner);
+        _;
+    }
+    modifier whenNotPaused() {
+        require(!trollRegistry.paused(), "PAUSED!");
+        _;
+    }
+
+    event Stake(address indexed backer, uint256 indexed trollProfileIndex, uint256 amount, uint256 shares, uint256 backerBalance, uint256 trollBalance, uint256 totalShares);
+    event UnstakeRequest(address indexed backer, uint256 indexed trollProfileIndex, uint256 shares, uint256 backerBalance);
+    event Unstake(address indexed backer, uint256 indexed trollProfileIndex, uint256 amount, uint256 shares, uint256 approvalDecrement, uint256 trollBalance, uint256 totalShares);
+    event UnstakeApproval(address indexed backer, address indexed msgSender, uint256[] signers, uint256 shares);
+    event UpdateConfigStore(OSWAP_ConfigStore newConfigStore);
+    event UpdateTrollRegistry(OSWAP_SideChainTrollRegistry newTrollRegistry);
+    event Penalty(uint256 indexed trollProfileIndex, uint256 amount);
+
+    struct Stakes{
+        uint256 trollProfileIndex;
+        uint256 shares;
+        uint256 pendingWithdrawal;
+        uint256 approvedWithdrawal;
+    }
+    // struct StakedBy{
+    //     address backer;
+    //     uint256 index;
+    // }
+
+    address owner;
+    IERC20 public immutable govToken;
+    OSWAP_ConfigStore public configStore;
+    OSWAP_SideChainTrollRegistry public trollRegistry;
+    IOSWAP_BridgeVault public bridgeVault;
+
+    mapping(address => Stakes) public backerStakes; // backerStakes[bakcer] = Stakes;
+    mapping(uint256 => address[]) public stakedBy; // stakedBy[trollProfileIndex][idx] = backer;
+    mapping(uint256 => mapping(address => uint256)) public stakedByInv; // stakedByInv[trollProfileIndex][backer] = stakedBy_idx;
+
+    mapping(uint256 => uint256) public trollStakesBalances; // trollStakesBalances[trollProfileIndex] = balance
+    mapping(uint256 => uint256) public trollStakesTotalShares; // trollStakesTotalShares[trollProfileIndex] = shares
+
+
+    uint256 public transactionsCount;
+    mapping(address => uint256) public lastTrollTxCount; // lastTrollTxCount[troll]
+    mapping(bytes32 => bool) public usedNonce;
+
+    constructor(OSWAP_SideChainTrollRegistry _trollRegistry) {
+        trollRegistry = _trollRegistry;
+        configStore = _trollRegistry.configStore();
+        govToken = _trollRegistry.govToken();
+        owner = msg.sender;
+    }
+    function initAddress(IOSWAP_BridgeVault _bridgeVault) external onlyOwner {
+        require(address(bridgeVault) == address(0), "address already set");
+        bridgeVault = _bridgeVault;
+    }
+    function updateConfigStore() external {
+        OSWAP_ConfigStore _configStore = configStore.newConfigStore();
+        require(address(_configStore) != address(0), "Invalid config store");
+        configStore = _configStore;
+        emit UpdateConfigStore(configStore);
+    }
+    function updateTrollRegistry() external {
+        OSWAP_SideChainTrollRegistry _trollRegistry = OSWAP_SideChainTrollRegistry(trollRegistry.newTrollRegistry());
+        require(address(_trollRegistry) != address(0), "Invalid config store");
+        trollRegistry = _trollRegistry;
+        emit UpdateTrollRegistry(trollRegistry);
+    }
+
+    function stakedByLength(uint256 trollProfileIndex) external view returns (uint256 length) {
+        length = stakedBy[trollProfileIndex].length;
+    }
+    function getBackers(uint256 trollProfileIndex) external view returns (address[] memory backers) {
+        return stakedBy[trollProfileIndex];
+    }
+
+    function removeStakedBy(uint256 _index) internal {
+        uint idx = stakedByInv[_index][msg.sender];
+        uint256 lastIdx = stakedBy[_index].length - 1;
+        if (idx != lastIdx){
+            stakedBy[_index][idx] = stakedBy[_index][lastIdx];
+            stakedByInv[_index][ stakedBy[_index][idx] ] = idx;
+        }
+        stakedBy[_index].pop();
+        delete stakedByInv[_index][msg.sender];
+    }
+
+    function stake(uint256 trollProfileIndex, uint256 amount) external nonReentrant whenNotPaused returns (uint256 shares){
+        (,OSWAP_SideChainTrollRegistry.TrollType trollType) = trollRegistry.trollProfiles(trollProfileIndex);
+        // OSWAP_SideChainTrollRegistry.TrollProfile memory profile = trollRegistry.trollProfiles(trollProfileIndex);
+        require(trollType == OSWAP_SideChainTrollRegistry.TrollType.SuperTroll, "Not a Super Troll");
+
+        if (amount > 0) {
+            uint256 balance = govToken.balanceOf(address(this));
+            govToken.safeTransferFrom(msg.sender, address(this), amount);
+            amount = govToken.balanceOf(address(this)) - balance;
+        }
+
+        Stakes storage staking = backerStakes[msg.sender];
+        if (staking.shares > 0) {
+            if (staking.trollProfileIndex != trollProfileIndex) {
+                require(staking.pendingWithdrawal == 0 && staking.approvedWithdrawal == 0, "you have pending withdrawal");
+                // existing staking found, remvoe stakes from old troll and found the latest stakes amount after penalties
+                uint256 _index = staking.trollProfileIndex;
+                uint256 stakedAmount = staking.shares * trollStakesBalances[_index] / trollStakesTotalShares[_index];
+                trollStakesBalances[_index] -= stakedAmount;
+                trollStakesTotalShares[_index] -= staking.shares;
+                amount += stakedAmount;
+
+                removeStakedBy(_index);
+
+                emit UnstakeRequest(msg.sender, _index, staking.shares, 0);
+                emit Unstake(msg.sender, _index, stakedAmount, staking.shares, 0, trollStakesBalances[_index], trollStakesTotalShares[_index]);
+
+                stakedByInv[trollProfileIndex][msg.sender] = stakedBy[trollProfileIndex].length;
+                stakedBy[trollProfileIndex].push(msg.sender);
+
+                staking.trollProfileIndex = trollProfileIndex;
+                staking.shares = 0;
+            }
+        } else {
+            // new staking
+            staking.trollProfileIndex = trollProfileIndex;
+            stakedByInv[trollProfileIndex][msg.sender] = stakedBy[trollProfileIndex].length;
+            stakedBy[trollProfileIndex].push(msg.sender);
+        }
+
+        uint256 trollActualBalance = trollStakesBalances[trollProfileIndex];
+        shares = trollActualBalance == 0 ? amount : (amount * trollStakesTotalShares[trollProfileIndex] / trollActualBalance);
+        require(shares > 0, "amount too small");
+        trollStakesTotalShares[trollProfileIndex] += shares;
+        trollStakesBalances[trollProfileIndex] += amount;
+        staking.shares += shares;
+
+        emit Stake(msg.sender, trollProfileIndex, amount, shares, staking.shares, trollStakesBalances[trollProfileIndex], trollStakesTotalShares[trollProfileIndex]);
+
+    }
+    function maxWithdrawal(address backer) external view returns (uint256 amount) {
+        Stakes storage staking = backerStakes[backer];
+        uint256 trollProfileIndex = staking.trollProfileIndex;
+        amount = staking.shares * (trollStakesBalances[trollProfileIndex]) / trollStakesTotalShares[trollProfileIndex];
+    }
+
+    function hashUnstakeRequest(address backer, uint256 trollProfileIndex, uint256 shares, uint256 _nonce) public view returns (bytes32 hash) {
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        return keccak256(abi.encodePacked(
+            chainId,
+            address(this),
+            backer,
+            trollProfileIndex,
+            shares,
+            _nonce
+        ));
+    }
+    function unstakeRequest(uint256 shares) external whenNotPaused {
+        Stakes storage staking = backerStakes[msg.sender];
+        uint256 trollProfileIndex = staking.trollProfileIndex;
+        require(trollProfileIndex != 0, "not a backer");
+        staking.shares -= shares;
+        staking.pendingWithdrawal += shares;
+
+        if (staking.shares == 0){
+            removeStakedBy(trollProfileIndex);
+        }
+
+        emit UnstakeRequest(msg.sender, trollProfileIndex, shares, staking.shares);
+    }
+    function unstakeApprove(bytes[] calldata signatures, address backer, uint256 trollProfileIndex, uint256 shares, uint256 _nonce) external {
+        Stakes storage staking = backerStakes[backer];
+        require(trollProfileIndex == staking.trollProfileIndex, "invalid trollProfileIndex");
+        require(shares <= staking.pendingWithdrawal, "Invalid shares amount");
+        (,, uint256[] memory signers) = _verifyStakedValue(msg.sender, signatures, hashUnstakeRequest(backer, trollProfileIndex, shares, _nonce));
+        staking.approvedWithdrawal += shares;
+        emit UnstakeApproval(backer, msg.sender, signers, shares);
+    }
+    function unstake(address backer, uint256 shares) external nonReentrant whenNotPaused {
+        Stakes storage staking = backerStakes[backer];
+        require(shares <= staking.approvedWithdrawal, "amount exceeded approval");
+        uint256 trollProfileIndex = staking.trollProfileIndex;
+
+        staking.approvedWithdrawal -= shares;
+        staking.pendingWithdrawal -= shares;
+
+        uint256 amount = shares * trollStakesBalances[trollProfileIndex] / trollStakesTotalShares[trollProfileIndex];
+
+        trollStakesTotalShares[trollProfileIndex] -= shares;
+        trollStakesBalances[trollProfileIndex] -= amount;
+
+        govToken.safeTransfer(backer, amount);
+
+        emit Unstake(backer, trollProfileIndex, amount, shares, shares, trollStakesBalances[trollProfileIndex], trollStakesTotalShares[trollProfileIndex]);
+    }
+
+    function verifyStakedValue(address msgSender, bytes[] calldata signatures, bytes32 paramsHash) external returns (uint256 superTrollCount, uint totalStake, uint256[] memory signers) {
+        require(msg.sender == address(bridgeVault), "not authorized");
+        return _verifyStakedValue(msgSender, signatures, paramsHash);
+    }
+    function _verifyStakedValue(address msgSender, bytes[] calldata signatures, bytes32 paramsHash) internal returns (uint256 superTrollCount, uint totalStake, uint256[] memory signers) {
+        require(!usedNonce[paramsHash], "nonce used");
+        usedNonce[paramsHash] = true;
+
+        uint256 generalTrollCount;
+        {
+        uint256 length = signatures.length;
+        signers = new uint256[](length);
+        address lastSigningTroll;
+        for (uint256 i = 0; i < length; ++i) {
+            address troll = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", paramsHash)).recover(signatures[i]);
+            require(troll != address(0), "Invalid signer");
+            uint256 trollProfileIndex = trollRegistry.trollProfileInv(troll);
+            if (trollProfileIndex > 0 && troll > lastSigningTroll) {
+                signers[i] = trollProfileIndex;
+                if (trollRegistry.isSuperTroll(troll, true)) {
+                    superTrollCount++;
+                } else if (trollRegistry.isGeneralTroll(troll, true)) {
+                    generalTrollCount++;
+                }
+                totalStake += trollStakesBalances[trollProfileIndex];
+                lastSigningTroll = troll;
+            }
+        }
+        }
+
+        (uint256 generalTrollMinCount, uint256 superTrollMinCount, uint256 transactionsGap) = configStore.getSignatureVerificationParams();
+        require(generalTrollCount >= generalTrollMinCount, "OSWAP_BridgeVault: Mininum general troll count not met");
+        require(superTrollCount >= superTrollMinCount, "OSWAP_BridgeVault: Mininum super troll count not met");
+
+        // fuzzy round robin
+        uint256 _transactionsCount = (++transactionsCount);
+        require((lastTrollTxCount[msgSender] + transactionsGap < _transactionsCount) || (_transactionsCount <= transactionsGap), "too soon");
+        lastTrollTxCount[msgSender] = _transactionsCount;
+    }
+
+    function penalizeSuperTroll(uint256 trollProfileIndex, uint256 amount) external {
+        require(msg.sender == address(trollRegistry), "not from registry");
+        require(amount <= trollStakesBalances[trollProfileIndex], "penalty exceeds troll balance");
+        trollStakesBalances[trollProfileIndex] -= amount;
+        // if penalty == balance, forfeit all backers' bonds
+        if (trollStakesBalances[trollProfileIndex] == 0) {
+            delete trollStakesBalances[trollProfileIndex];
+            delete trollStakesTotalShares[trollProfileIndex];
+            address[] storage backers = stakedBy[trollProfileIndex];
+            uint256 length = backers.length;
+            for (uint256 i = 0 ; i < length ; i++) {
+                address backer = backers[i];
+                delete backerStakes[backer];
+                delete stakedByInv[trollProfileIndex][backer];
+            }
+            delete stakedBy[trollProfileIndex];
+        }
+        emit Penalty(trollProfileIndex, amount);
     }
 }
 pragma solidity 0.8.6;
@@ -1673,264 +2017,112 @@ pragma solidity 0.8.6;
 
 
 
-contract OSWAP_BridgeVaultTrollRegistry is ReentrancyGuard {
+contract OSWAP_RouterVaultWrapper {
     using SafeERC20 for IERC20;
-    using ECDSA for bytes32;
 
-
-    modifier onlyOwner {
-        require(msg.sender == owner);
-        _;
-    }
-    modifier whenNotPaused() {
-        require(!trollRegistry.paused(), "PAUSED!");
+    modifier onlyEndUser() {
+        require((tx.origin == msg.sender && !Address.isContract(msg.sender)), "Not from end user");
         _;
     }
 
-    event Stake(address indexed backer, uint256 indexed trollProfileIndex, uint256 amount, uint256 shares, uint256 backerBalance, uint256 trollBalance, uint256 totalShares);
-    event UnstakeRequest(address indexed backer, uint256 indexed trollProfileIndex, uint256 shares, uint256 backerBalance);
-    event Unstake(address indexed backer, uint256 indexed trollProfileIndex, uint256 amount, uint256 shares, uint256 approvalDecrement, uint256 trollBalance, uint256 totalShares);
-    event UnstakeApproval(address indexed backer, address indexed msgSender, uint256[] signers, uint256 shares);
+    function _transferFrom(IERC20 token, address from, uint amount) internal returns (uint256 balance) {
+        balance = token.balanceOf(address(this));
+        token.safeTransferFrom(from, address(this), amount);
+        balance = token.balanceOf(address(this)) - balance;
+    }
+
     event UpdateConfigStore(OSWAP_ConfigStore newConfigStore);
-    event UpdateTrollRegistry(OSWAP_SideChainTrollRegistry newTrollRegistry);
-    event Penalty(uint256 indexed trollProfileIndex, uint256 amount);
+    event Swap(address indexed vault, uint256 orderId, address sender, address inToken, uint256 inAmount);
 
-    struct Stakes{
-        uint256 trollProfileIndex;
-        uint256 shares;
-        uint256 pendingWithdrawal;
-        uint256 approvedWithdrawal;
-    }
-    // struct StakedBy{
-    //     address backer;
-    //     uint256 index;
-    // }
+    address public owner;
 
-    address owner;
-    IERC20 public immutable govToken;
     OSWAP_ConfigStore public configStore;
-    OSWAP_SideChainTrollRegistry public trollRegistry;
-    IOSWAP_BridgeVault public bridgeVault;
 
-    mapping(address => Stakes) public backerStakes; // backerStakes[bakcer] = Stakes;
-    mapping(uint256 => address[]) public stakedBy; // stakedBy[trollProfileIndex][idx] = backer;
-    mapping(uint256 => mapping(address => uint256)) public stakedByInv; // stakedByInv[trollProfileIndex][backer] = stakedBy_idx;
-
-    mapping(uint256 => uint256) public trollStakesBalances; // trollStakesBalances[trollProfileIndex] = balance
-    mapping(uint256 => uint256) public trollStakesTotalShares; // trollStakesTotalShares[trollProfileIndex] = shares
-
-
-    uint256 public transactionsCount;
-    mapping(address => uint256) public lastTrollTxCount; // lastTrollTxCount[troll]
-    mapping(bytes32 => bool) public usedNonce;
-
-    constructor(OSWAP_SideChainTrollRegistry _trollRegistry) {
-        trollRegistry = _trollRegistry;
-        configStore = _trollRegistry.configStore();
-        govToken = _trollRegistry.govToken();
+    constructor() {
         owner = msg.sender;
     }
-    function initAddress(IOSWAP_BridgeVault _bridgeVault) external onlyOwner {
-        require(address(bridgeVault) == address(0), "address already set");
-        bridgeVault = _bridgeVault;
+    function initAddress(OSWAP_ConfigStore _configStore) external {
+        require(msg.sender == owner, "not from owner");
+        require(address(_configStore) != address(0), "null address");
+        require(address(configStore) == address(0), "already set");
+        configStore = _configStore;
+        owner = address(0);
     }
+
     function updateConfigStore() external {
         OSWAP_ConfigStore _configStore = configStore.newConfigStore();
         require(address(_configStore) != address(0), "Invalid config store");
         configStore = _configStore;
         emit UpdateConfigStore(configStore);
     }
-    function updateTrollRegistry() external {
-        OSWAP_SideChainTrollRegistry _trollRegistry = OSWAP_SideChainTrollRegistry(trollRegistry.newTrollRegistry());
-        require(address(_trollRegistry) != address(0), "Invalid config store");
-        trollRegistry = _trollRegistry;
-        emit UpdateTrollRegistry(trollRegistry);
+
+    receive() external payable {
+        require(msg.sender == configStore.router(), "not form router");
     }
 
-    function stakedByLength(uint256 trollProfileIndex) external view returns (uint256 length) {
-        length = stakedBy[trollProfileIndex].length;
-    }
-    function getBackers(uint256 trollProfileIndex) external view returns (address[] memory backers) {
-        return stakedBy[trollProfileIndex];
-    }
+    function swapExactTokensForTokens(address[] calldata pair, IOSWAP_BridgeVault vault, uint256 amountIn, uint256 deadline, IOSWAP_BridgeVault.Order memory order) external onlyEndUser returns (uint256 orderId) {
+        // since we don't have a vault registry, we cannot lookup the vault from the bridge token, we pass the vault address instead
+        address router = configStore.router();
 
-    function removeStakedBy(uint256 _index) internal {
-        uint idx = stakedByInv[_index][msg.sender];
-        uint256 lastIdx = stakedBy[_index].length - 1;
-        if (idx != lastIdx){
-            stakedBy[_index][idx] = stakedBy[_index][lastIdx];
-            stakedByInv[_index][ stakedBy[_index][idx] ] = idx;
-        }
-        stakedBy[_index].pop();
-        delete stakedByInv[_index][msg.sender];
-    }
-
-    function stake(uint256 trollProfileIndex, uint256 amount) external nonReentrant whenNotPaused returns (uint256 shares){
-        (,OSWAP_SideChainTrollRegistry.TrollType trollType) = trollRegistry.trollProfiles(trollProfileIndex);
-        // OSWAP_SideChainTrollRegistry.TrollProfile memory profile = trollRegistry.trollProfiles(trollProfileIndex);
-        require(trollType == OSWAP_SideChainTrollRegistry.TrollType.SuperTroll, "Not a Super Troll");
-
-        if (amount > 0) {
-            uint256 balance = govToken.balanceOf(address(this));
-            govToken.safeTransferFrom(msg.sender, address(this), amount);
-            amount = govToken.balanceOf(address(this)) - balance;
-        }
-
-        Stakes storage staking = backerStakes[msg.sender];
-        if (staking.shares > 0) {
-            if (staking.trollProfileIndex != trollProfileIndex) {
-                require(staking.pendingWithdrawal == 0 && staking.approvedWithdrawal == 0, "you have pending withdrawal");
-                // existing staking found, remvoe stakes from old troll and found the latest stakes amount after penalties
-                uint256 _index = staking.trollProfileIndex;
-                uint256 stakedAmount = staking.shares * trollStakesBalances[_index] / trollStakesTotalShares[_index];
-                trollStakesBalances[_index] -= stakedAmount;
-                trollStakesTotalShares[_index] -= staking.shares;
-                amount += stakedAmount;
-
-                removeStakedBy(_index);
-
-                emit UnstakeRequest(msg.sender, _index, staking.shares, 0);
-                emit Unstake(msg.sender, _index, stakedAmount, staking.shares, 0, trollStakesBalances[_index], trollStakesTotalShares[_index]);
-
-                stakedByInv[trollProfileIndex][msg.sender] = stakedBy[trollProfileIndex].length;
-                stakedBy[trollProfileIndex].push(msg.sender);
-
-                staking.trollProfileIndex = trollProfileIndex;
-                staking.shares = 0;
-            }
-        } else {
-            // new staking
-            staking.trollProfileIndex = trollProfileIndex;
-            stakedByInv[trollProfileIndex][msg.sender] = stakedBy[trollProfileIndex].length;
-            stakedBy[trollProfileIndex].push(msg.sender);
-        }
-
-        uint256 trollActualBalance = trollStakesBalances[trollProfileIndex];
-        shares = trollActualBalance == 0 ? amount : (amount * trollStakesTotalShares[trollProfileIndex] / trollActualBalance);
-        require(shares > 0, "amount too small");
-        trollStakesTotalShares[trollProfileIndex] += shares;
-        trollStakesBalances[trollProfileIndex] += amount;
-        staking.shares += shares;
-
-        emit Stake(msg.sender, trollProfileIndex, amount, shares, staking.shares, trollStakesBalances[trollProfileIndex], trollStakesTotalShares[trollProfileIndex]);
-
-    }
-    function maxWithdrawal(address backer) external view returns (uint256 amount) {
-        Stakes storage staking = backerStakes[backer];
-        uint256 trollProfileIndex = staking.trollProfileIndex;
-        amount = staking.shares * (trollStakesBalances[trollProfileIndex]) / trollStakesTotalShares[trollProfileIndex];
-    }
-
-    function hashUnstakeRequest(address backer, uint256 trollProfileIndex, uint256 shares, uint256 _nonce) public view returns (bytes32 hash) {
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        return keccak256(abi.encodePacked(
-            chainId,
-            address(this),
-            backer,
-            trollProfileIndex,
-            shares,
-            _nonce
-        ));
-    }
-    function unstakeRequest(uint256 shares) external whenNotPaused {
-        Stakes storage staking = backerStakes[msg.sender];
-        uint256 trollProfileIndex = staking.trollProfileIndex;
-        require(trollProfileIndex != 0, "not a backer");
-        staking.shares -= shares;
-        staking.pendingWithdrawal += shares;
-
-        if (staking.shares == 0){
-            removeStakedBy(trollProfileIndex);
-        }
-
-        emit UnstakeRequest(msg.sender, trollProfileIndex, shares, staking.shares);
-    }
-    function unstakeApprove(bytes[] calldata signatures, address backer, uint256 trollProfileIndex, uint256 shares, uint256 _nonce) external {
-        Stakes storage staking = backerStakes[backer];
-        require(trollProfileIndex == staking.trollProfileIndex, "invalid trollProfileIndex");
-        require(shares <= staking.pendingWithdrawal, "Invalid shares amount");
-        (,, uint256[] memory signers) = _verifyStakedValue(msg.sender, signatures, hashUnstakeRequest(backer, trollProfileIndex, shares, _nonce));
-        staking.approvedWithdrawal += shares;
-        emit UnstakeApproval(backer, msg.sender, signers, shares);
-    }
-    function unstake(address backer, uint256 shares) external nonReentrant whenNotPaused {
-        Stakes storage staking = backerStakes[backer];
-        require(shares <= staking.approvedWithdrawal, "amount exceeded approval");
-        uint256 trollProfileIndex = staking.trollProfileIndex;
-
-        staking.approvedWithdrawal -= shares;
-        staking.pendingWithdrawal -= shares;
-
-        uint256 amount = shares * trollStakesBalances[trollProfileIndex] / trollStakesTotalShares[trollProfileIndex];
-
-        trollStakesTotalShares[trollProfileIndex] -= shares;
-        trollStakesBalances[trollProfileIndex] -= amount;
-
-        govToken.safeTransfer(backer, amount);
-
-        emit Unstake(backer, trollProfileIndex, amount, shares, shares, trollStakesBalances[trollProfileIndex], trollStakesTotalShares[trollProfileIndex]);
-    }
-
-    function verifyStakedValue(address msgSender, bytes[] calldata signatures, bytes32 paramsHash) external returns (uint256 superTrollCount, uint totalStake, uint256[] memory signers) {
-        require(msg.sender == address(bridgeVault), "not authorized");
-        return _verifyStakedValue(msgSender, signatures, paramsHash);
-    }
-    function _verifyStakedValue(address msgSender, bytes[] calldata signatures, bytes32 paramsHash) internal returns (uint256 superTrollCount, uint totalStake, uint256[] memory signers) {
-        require(!usedNonce[paramsHash], "nonce used");
-        usedNonce[paramsHash] = true;
-
-        uint256 generalTrollCount;
+        IERC20 inToken;
         {
-        uint256 length = signatures.length;
-        signers = new uint256[](length);
-        address lastSigningTroll;
-        for (uint256 i = 0; i < length; ++i) {
-            address troll = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", paramsHash)).recover(signatures[i]);
-            require(troll != address(0), "Invalid signer");
-            uint256 trollProfileIndex = trollRegistry.trollProfileInv(troll);
-            if (trollProfileIndex > 0 && troll > lastSigningTroll) {
-                signers[i] = trollProfileIndex;
-                if (trollRegistry.isSuperTroll(troll, true)) {
-                    superTrollCount++;
-                } else if (trollRegistry.isGeneralTroll(troll, true)) {
-                    generalTrollCount++;
-                }
-                totalStake += trollStakesBalances[trollProfileIndex];
-                lastSigningTroll = troll;
-            }
+        address[] memory path = IOSWAP_HybridRouter2(router).getPathOut(pair, address(vault.asset()));
+        inToken = IERC20(path[0]);
         }
-        }
+        amountIn = _transferFrom(inToken, msg.sender, amountIn);
+        inToken.safeIncreaseAllowance(router, amountIn);
 
-        (uint256 generalTrollMinCount, uint256 superTrollMinCount, uint256 transactionsGap) = configStore.getSignatureVerificationParams();
-        require(generalTrollCount >= generalTrollMinCount, "OSWAP_BridgeVault: Mininum general troll count not met");
-        require(superTrollCount >= superTrollMinCount, "OSWAP_BridgeVault: Mininum super troll count not met");
+        (/*address[] memory path*/, uint256[] memory amounts) = IOSWAP_HybridRouter2(router).swapExactTokensForTokens(amountIn, order.inAmount, pair, address(inToken), address(vault), deadline, new bytes(0));
+        order.inAmount = amounts[amounts.length-1];
 
-        // fuzzy round robin
-        uint256 _transactionsCount = (++transactionsCount);
-        require((lastTrollTxCount[msgSender] + transactionsGap < _transactionsCount) || (_transactionsCount <= transactionsGap), "too soon");
-        lastTrollTxCount[msgSender] = _transactionsCount;
+        orderId = vault.newOrderFromRouter(order, msg.sender);
+        emit Swap(address(vault), orderId, msg.sender, address(inToken), amounts[0]);
     }
-
-    function penalizeSuperTroll(uint256 trollProfileIndex, uint256 amount) external {
-        require(msg.sender == address(trollRegistry), "not from registry");
-        require(amount <= trollStakesBalances[trollProfileIndex], "penalty exceeds troll balance");
-        trollStakesBalances[trollProfileIndex] -= amount;
-        // if penalty == balance, forfeit all backers' bonds
-        if (trollStakesBalances[trollProfileIndex] == 0) {
-            delete trollStakesBalances[trollProfileIndex];
-            delete trollStakesTotalShares[trollProfileIndex];
-            address[] storage backers = stakedBy[trollProfileIndex];
-            uint256 length = backers.length;
-            for (uint256 i = 0 ; i < length ; i++) {
-                address backer = backers[i];
-                delete backerStakes[backer];
-                delete stakedByInv[trollProfileIndex][backer];
-            }
-            delete stakedBy[trollProfileIndex];
+    function swapTokensForExactTokens(address[] calldata pair, IOSWAP_BridgeVault vault, uint256 amountIn/*amountInMax*/, uint256 deadline, IOSWAP_BridgeVault.Order calldata order) external onlyEndUser returns (uint256 orderId) {
+        IERC20 bridgeToken = vault.asset();
+        address router = configStore.router();
+        IERC20 inToken;
+        {
+        address[] memory path = IOSWAP_HybridRouter2(router).getPathOut(pair, address(bridgeToken));
+        inToken = IERC20(path[0]);
         }
-        emit Penalty(trollProfileIndex, amount);
+        amountIn = _transferFrom(inToken, msg.sender, amountIn);
+        inToken.safeIncreaseAllowance(router, amountIn);
+
+        (/*address[] memory path*/, uint256[] memory amounts) = IOSWAP_HybridRouter2(router).swapTokensForExactTokens(order.inAmount, amountIn, pair, address(bridgeToken), address(vault), deadline, new bytes(0));
+
+        orderId = vault.newOrderFromRouter(order, msg.sender);
+        emit Swap(address(vault), orderId, msg.sender, address(inToken), amounts[0]);
+        // refund excessive amount back to user
+        if (amountIn > amounts[0]) {
+            inToken.safeTransfer(msg.sender, amountIn - amounts[0]);
+            inToken.safeApprove(router, 0);
+        }
+    }
+    function swapExactETHForTokens(address[] calldata pair, IOSWAP_BridgeVault vault, uint256 deadline, IOSWAP_BridgeVault.Order memory order) external payable onlyEndUser returns (uint256 orderId) {
+        address router = configStore.router();
+
+        // forward incoming ETH to router
+        (/*address[] memory path*/, uint256[] memory amounts) = IOSWAP_HybridRouter2(router).swapExactETHForTokens{value:msg.value}(order.inAmount, pair, address(vault), deadline, new bytes(0));
+
+        order.inAmount = amounts[amounts.length-1];
+
+        orderId = vault.newOrderFromRouter(order, msg.sender);
+        emit Swap(address(vault), orderId, msg.sender, address(0), amounts[0]);
+    }
+    function swapETHForExactTokens(address[] calldata pair, IOSWAP_BridgeVault vault, uint256 deadline, IOSWAP_BridgeVault.Order calldata order) external payable onlyEndUser returns (uint256 orderId) {
+        address router = configStore.router();
+
+        // forward incoming ETH to router
+        (/*address[] memory path*/, uint256[] memory amounts) = IOSWAP_HybridRouter2(router).swapETHForExactTokens{value:msg.value}(order.inAmount, pair, address(vault), deadline, new bytes(0));
+
+        orderId = vault.newOrderFromRouter(order, msg.sender);
+        emit Swap(address(vault), orderId, msg.sender, address(0), amounts[0]);
+        // refund excessive amount back to user
+        safeTransferETH(msg.sender, msg.value - amounts[0]);
+    }
+    function safeTransferETH(address to, uint value) internal {
+        (bool success,) = to.call{value:value}(new bytes(0));
+        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
     }
 }

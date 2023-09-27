@@ -17,7 +17,11 @@
             }
         ],
         "flattenFiles": [
-            "contracts/OSWAP_BridgeVaultTrollRegistry.sol"
+            "contracts/OSWAP_BridgeVaultTrollRegistry.sol",
+            "contracts/OSWAP_BridgeVault2.sol",
+            "contracts/OSWAP_ConfigStore.sol",
+            "contracts/OSWAP_RouterVaultWrapper.sol",
+            "contracts/MockTokens.sol"
         ]
     }
 }

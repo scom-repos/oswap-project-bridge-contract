@@ -19,8 +19,8 @@ export interface IRemoveLiquidityParams {provider:string;assetAmount:number|BigN
 export interface IRequestAmendOrderParams {orderId:number|BigNumber;order:{peerChain:number|BigNumber,inAmount:number|BigNumber,outToken:string,minOutAmount:number|BigNumber,to:string,expire:number|BigNumber}}
 export interface IRequestCancelOrderParams {sourceChainId:number|BigNumber;orderId:number|BigNumber}
 export interface ISwapParams {signatures:string[];owner:string;orderId:number|BigNumber;amendment:number|BigNumber;protocolFee:number|BigNumber;pair:string[];order:{peerChain:number|BigNumber,inAmount:number|BigNumber,outToken:string,minOutAmount:number|BigNumber,to:string,expire:number|BigNumber}}
-export interface ITransferParams {to:string;amount:number|BigNumber}
-export interface ITransferFromParams {from:string;to:string;amount:number|BigNumber}
+export interface ITransferParams {recipient:string;amount:number|BigNumber}
+export interface ITransferFromParams {sender:string;recipient:string;amount:number|BigNumber}
 export interface IVoidOrderParams {signatures:string[];orderId:string}
 export class OSWAP_BridgeVault extends _Contract{
     static _abi: any = Bin.abi;
@@ -864,7 +864,7 @@ export class OSWAP_BridgeVault extends _Contract{
         this.sync = Object.assign(sync_send, {
             call:sync_call
         });
-        let transferParams = (params: ITransferParams) => [params.to,this.wallet.utils.toString(params.amount)];
+        let transferParams = (params: ITransferParams) => [params.recipient,this.wallet.utils.toString(params.amount)];
         let transfer_send = async (params: ITransferParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('transfer',transferParams(params),options);
             return result;
@@ -876,7 +876,7 @@ export class OSWAP_BridgeVault extends _Contract{
         this.transfer = Object.assign(transfer_send, {
             call:transfer_call
         });
-        let transferFromParams = (params: ITransferFromParams) => [params.from,params.to,this.wallet.utils.toString(params.amount)];
+        let transferFromParams = (params: ITransferFromParams) => [params.sender,params.recipient,this.wallet.utils.toString(params.amount)];
         let transferFrom_send = async (params: ITransferFromParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('transferFrom',transferFromParams(params),options);
             return result;

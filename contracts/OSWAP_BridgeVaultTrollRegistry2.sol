@@ -226,16 +226,23 @@ contract OSWAP_BridgeVaultTrollRegistry2 is IOSWAP_BridgeVaultTrollRegistry2, Re
         for (uint256 i = 0; i < length; ++i) {
             address troll = paramsHash.toEthSignedMessageHash().recover(signatures[i]);
             require(troll != address(0), "Invalid signer");
-            uint256 trollProfileIndex = trollRegistry.trollProfileInv(troll);
-            if (trollProfileIndex > 0 && troll > lastSigningTroll) {
-                signers[i] = trollProfileIndex;
-                if (trollRegistry.isSuperTroll(troll, true)) {
-                    superTrollCount++;
-                } else if (trollRegistry.isGeneralTroll(troll, true)) {
-                    generalTrollCount++;
-                }
-                totalStake += trollStakesBalances[trollProfileIndex];
+            if (troll > lastSigningTroll) {
                 lastSigningTroll = troll;
+                uint256 trollProfileIndex = trollRegistry.trollProfileInv(troll);
+                if (trollProfileIndex > 0) {
+                    signers[i] = trollProfileIndex;
+                    if (trollRegistry.isSuperTroll(troll, true)) {
+                        superTrollCount++;
+                    } else if (trollRegistry.isGeneralTroll(troll, true)) {
+                        generalTrollCount++;
+                    }
+                } else {
+                    trollProfileIndex = projectRegistry.trollProfileInv(troll);
+                    if (trollProfileIndex > 0) {
+                        signers[i] = trollProfileIndex;
+                        totalStake += trollStakesBalances[trollProfileIndex];
+                    }
+                }
             }
         }
         }

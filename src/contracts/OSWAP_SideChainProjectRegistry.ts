@@ -1,20 +1,19 @@
 import {IWallet, Contract as _Contract, Transaction, TransactionReceipt, BigNumber, Event, IBatchRequestObj, TransactionOptions} from "@ijstech/eth-contract";
 import Bin from "./OSWAP_SideChainProjectRegistry.json";
 export interface IAddTrollParams {signatures:string[];trollProfileIndex:number|BigNumber;troll:string;nonce:number|BigNumber}
-export interface IHashAddTrollParams {trollProfileIndex:number|BigNumber;troll:string;nonce:number|BigNumber}
 export interface IHashNewVaultParams {projectId:number|BigNumber;asset:string;owner:string;projectTrolls:(number|BigNumber)[];nonce:number|BigNumber}
 export interface IHashNewVaultFormOwnerParams {asset:string;projectTrolls:(number|BigNumber)[];nonce:number|BigNumber}
+export interface IHashTrollParams {trollProfileIndex:number|BigNumber;troll:string;nonce:number|BigNumber}
 export interface IHashUpdateProjectParams {projectId:number|BigNumber;newOwner:string;trollsToRemove:(number|BigNumber)[];trollsToAdd:(number|BigNumber)[];nonce:number|BigNumber}
 export interface IHashUpdateProjectFromOwnerParams {projectId:number|BigNumber;newOwner:string;trollsToRemove:(number|BigNumber)[];trollsToAdd:(number|BigNumber)[];nonce:number|BigNumber}
-export interface IHashUpdateTrollParams {trollProfileIndex:number|BigNumber;newTroll:string;nonce:number|BigNumber}
-export interface IHashUpdateTrollFromTrollParams {trollProfileIndex:number|BigNumber;newTroll:string;nonce:number|BigNumber}
+export interface IHashUpdateTrollFromOwnerParams {trollProfileIndex:number|BigNumber;newTroll:string;nonce:number|BigNumber}
 export interface IInitAddressParams {vaultRegistryCreator:string;bridgeVaultCreator:string}
 export interface IIsProjectTrollParams {projectId:number|BigNumber;trollProfileIndex:number|BigNumber}
 export interface IIsProjectTrollByAddressParams {projectId:number|BigNumber;troll:string}
 export interface INewVaultParams {trollsSignatures:string[];ownerSignature:string;projectId:number|BigNumber;asset:string;owner:string;projectTrolls:(number|BigNumber)[];nonceForOwnerSignature:number|BigNumber;nonce:number|BigNumber}
 export interface IProjectTrollsInvParams {param1:number|BigNumber;param2:number|BigNumber}
 export interface IUpdateProjectParams {trollsSignatures:string[];ownerSignature:string;projectId:number|BigNumber;newOwner:string;trollsToRemove:(number|BigNumber)[];trollsToAdd:(number|BigNumber)[];nonceForOwnerSignature:number|BigNumber;nonce:number|BigNumber}
-export interface IUpdateTrollParams {signatures:string[];trollSignature:string;trollProfileIndex:number|BigNumber;newTroll:string;nonceForTrollSignature:number|BigNumber;nonce:number|BigNumber}
+export interface IUpdateTrollParams {signatures:string[];ownerSignature:string;trollProfileIndex:number|BigNumber;newTroll:string;nonceForOwnerSignature:number|BigNumber;nonce:number|BigNumber}
 export interface IUsedProjectNonceParams {param1:number|BigNumber;param2:number|BigNumber}
 export class OSWAP_SideChainProjectRegistry extends _Contract{
     static _abi: any = Bin.abi;
@@ -132,14 +131,14 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
     getProjects: {
         (projectIds:(number|BigNumber)[], options?: TransactionOptions): Promise<{asset:string,owner:string,vaultRegistry:string,bridgeVault:string,projectTrolls:BigNumber[]}[]>;
     }
-    hashAddTroll: {
-        (params: IHashAddTrollParams, options?: TransactionOptions): Promise<string>;
-    }
     hashNewVault: {
         (params: IHashNewVaultParams, options?: TransactionOptions): Promise<string>;
     }
     hashNewVaultFormOwner: {
         (params: IHashNewVaultFormOwnerParams, options?: TransactionOptions): Promise<string>;
+    }
+    hashTroll: {
+        (params: IHashTrollParams, options?: TransactionOptions): Promise<string>;
     }
     hashUpdateProject: {
         (params: IHashUpdateProjectParams, options?: TransactionOptions): Promise<string>;
@@ -147,11 +146,8 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
     hashUpdateProjectFromOwner: {
         (params: IHashUpdateProjectFromOwnerParams, options?: TransactionOptions): Promise<string>;
     }
-    hashUpdateTroll: {
-        (params: IHashUpdateTrollParams, options?: TransactionOptions): Promise<string>;
-    }
-    hashUpdateTrollFromTroll: {
-        (params: IHashUpdateTrollFromTrollParams, options?: TransactionOptions): Promise<string>;
+    hashUpdateTrollFromOwner: {
+        (params: IHashUpdateTrollFromOwnerParams, options?: TransactionOptions): Promise<string>;
     }
     initAddress: {
         (params: IInitAddressParams, options?: TransactionOptions): Promise<TransactionReceipt>;
@@ -198,7 +194,7 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
         (param1:string, options?: TransactionOptions): Promise<BigNumber>;
     }
     trollProfiles: {
-        (param1:number|BigNumber, options?: TransactionOptions): Promise<string>;
+        (param1:number|BigNumber, options?: TransactionOptions): Promise<{owner:string,troll:string}>;
     }
     trollRegistry: {
         (options?: TransactionOptions): Promise<string>;
@@ -252,12 +248,6 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
             )));
         }
         this.getProjects = getProjects_call
-        let hashAddTrollParams = (params: IHashAddTrollParams) => [this.wallet.utils.toString(params.trollProfileIndex),params.troll,this.wallet.utils.toString(params.nonce)];
-        let hashAddTroll_call = async (params: IHashAddTrollParams, options?: TransactionOptions): Promise<string> => {
-            let result = await this.call('hashAddTroll',hashAddTrollParams(params),options);
-            return result;
-        }
-        this.hashAddTroll = hashAddTroll_call
         let hashNewVaultParams = (params: IHashNewVaultParams) => [this.wallet.utils.toString(params.projectId),params.asset,params.owner,this.wallet.utils.toString(params.projectTrolls),this.wallet.utils.toString(params.nonce)];
         let hashNewVault_call = async (params: IHashNewVaultParams, options?: TransactionOptions): Promise<string> => {
             let result = await this.call('hashNewVault',hashNewVaultParams(params),options);
@@ -270,6 +260,12 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
             return result;
         }
         this.hashNewVaultFormOwner = hashNewVaultFormOwner_call
+        let hashTrollParams = (params: IHashTrollParams) => [this.wallet.utils.toString(params.trollProfileIndex),params.troll,this.wallet.utils.toString(params.nonce)];
+        let hashTroll_call = async (params: IHashTrollParams, options?: TransactionOptions): Promise<string> => {
+            let result = await this.call('hashTroll',hashTrollParams(params),options);
+            return result;
+        }
+        this.hashTroll = hashTroll_call
         let hashUpdateProjectParams = (params: IHashUpdateProjectParams) => [this.wallet.utils.toString(params.projectId),params.newOwner,this.wallet.utils.toString(params.trollsToRemove),this.wallet.utils.toString(params.trollsToAdd),this.wallet.utils.toString(params.nonce)];
         let hashUpdateProject_call = async (params: IHashUpdateProjectParams, options?: TransactionOptions): Promise<string> => {
             let result = await this.call('hashUpdateProject',hashUpdateProjectParams(params),options);
@@ -282,18 +278,12 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
             return result;
         }
         this.hashUpdateProjectFromOwner = hashUpdateProjectFromOwner_call
-        let hashUpdateTrollParams = (params: IHashUpdateTrollParams) => [this.wallet.utils.toString(params.trollProfileIndex),params.newTroll,this.wallet.utils.toString(params.nonce)];
-        let hashUpdateTroll_call = async (params: IHashUpdateTrollParams, options?: TransactionOptions): Promise<string> => {
-            let result = await this.call('hashUpdateTroll',hashUpdateTrollParams(params),options);
+        let hashUpdateTrollFromOwnerParams = (params: IHashUpdateTrollFromOwnerParams) => [this.wallet.utils.toString(params.trollProfileIndex),params.newTroll,this.wallet.utils.toString(params.nonce)];
+        let hashUpdateTrollFromOwner_call = async (params: IHashUpdateTrollFromOwnerParams, options?: TransactionOptions): Promise<string> => {
+            let result = await this.call('hashUpdateTrollFromOwner',hashUpdateTrollFromOwnerParams(params),options);
             return result;
         }
-        this.hashUpdateTroll = hashUpdateTroll_call
-        let hashUpdateTrollFromTrollParams = (params: IHashUpdateTrollFromTrollParams) => [this.wallet.utils.toString(params.trollProfileIndex),params.newTroll,this.wallet.utils.toString(params.nonce)];
-        let hashUpdateTrollFromTroll_call = async (params: IHashUpdateTrollFromTrollParams, options?: TransactionOptions): Promise<string> => {
-            let result = await this.call('hashUpdateTrollFromTroll',hashUpdateTrollFromTrollParams(params),options);
-            return result;
-        }
-        this.hashUpdateTrollFromTroll = hashUpdateTrollFromTroll_call
+        this.hashUpdateTrollFromOwner = hashUpdateTrollFromOwner_call
         let isPermitted_call = async (param1:string, options?: TransactionOptions): Promise<boolean> => {
             let result = await this.call('isPermitted',[param1],options);
             return result;
@@ -337,9 +327,12 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
             return new BigNumber(result);
         }
         this.trollProfileInv = trollProfileInv_call
-        let trollProfiles_call = async (param1:number|BigNumber, options?: TransactionOptions): Promise<string> => {
+        let trollProfiles_call = async (param1:number|BigNumber, options?: TransactionOptions): Promise<{owner:string,troll:string}> => {
             let result = await this.call('trollProfiles',[this.wallet.utils.toString(param1)],options);
-            return result;
+            return {
+                owner: result.owner,
+                troll: result.troll
+            };
         }
         this.trollProfiles = trollProfiles_call
         let trollRegistry_call = async (options?: TransactionOptions): Promise<string> => {
@@ -455,7 +448,7 @@ export class OSWAP_SideChainProjectRegistry extends _Contract{
         this.updateProject = Object.assign(updateProject_send, {
             call:updateProject_call
         });
-        let updateTrollParams = (params: IUpdateTrollParams) => [this.wallet.utils.stringToBytes(params.signatures),this.wallet.utils.stringToBytes(params.trollSignature),this.wallet.utils.toString(params.trollProfileIndex),params.newTroll,this.wallet.utils.toString(params.nonceForTrollSignature),this.wallet.utils.toString(params.nonce)];
+        let updateTrollParams = (params: IUpdateTrollParams) => [this.wallet.utils.stringToBytes(params.signatures),this.wallet.utils.stringToBytes(params.ownerSignature),this.wallet.utils.toString(params.trollProfileIndex),params.newTroll,this.wallet.utils.toString(params.nonceForOwnerSignature),this.wallet.utils.toString(params.nonce)];
         let updateTroll_send = async (params: IUpdateTrollParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('updateTroll',updateTrollParams(params),options);
             return result;

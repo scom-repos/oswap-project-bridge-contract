@@ -1,6 +1,7 @@
 export { Authorization } from './Authorization';
 export { MOCK_TrollRegistry } from './MOCK_TrollRegistry';
 export { MintableToken } from './MintableToken';
+export { MockErc20 } from './MockErc20';
 export { OSWAP_BridgeVaultTrollRegistry } from './OSWAP_BridgeVaultTrollRegistry';
 export { OSWAP_BridgeVaultTrollRegistry2 } from './OSWAP_BridgeVaultTrollRegistry2';
 export { OSWAP_BridgeVaultTrollRegistry2Creator } from './OSWAP_BridgeVaultTrollRegistry2Creator';

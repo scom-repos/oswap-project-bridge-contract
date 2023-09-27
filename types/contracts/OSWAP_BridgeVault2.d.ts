@@ -114,12 +114,12 @@ export interface ISwapParams {
     };
 }
 export interface ITransferParams {
-    to: string;
+    recipient: string;
     amount: number | BigNumber;
 }
 export interface ITransferFromParams {
-    from: string;
-    to: string;
+    sender: string;
+    recipient: string;
     amount: number | BigNumber;
 }
 export interface IVoidOrderParams {

@@ -15,9 +15,14 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
 /*
     struct Project {
         IERC20 asset;
+        address owner;
         IOSWAP_BridgeVaultTrollRegistry2 vaultRegistry;
         IOSWAP_BridgeVault2 bridgeVault;
         uint256[] projectTrolls; // trollProfileIndex
+    }
+    struct TrollProfile {
+        address owner;
+        address troll;
     }
 */
 
@@ -25,7 +30,7 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
     IOSWAP_BridgeVaultTrollRegistry2Creator public override vaultRegistryCreator;
     IOSWAP_BridgeVault2Creator public override bridgeVaultCreator;
     
-    mapping(uint256 => address) public override trollProfiles; // trollProfiles[trollProfileIndex] = troll
+    mapping(uint256 => TrollProfile) public override trollProfiles; // trollProfiles[trollProfileIndex] = {owner,troll}
     mapping(address => uint256) public override trollProfileInv; // trollProfileInv[troll] = trollProfileIndex
 
     mapping(uint256 => Project) internal projects; // projects[projectId] = Project
@@ -45,7 +50,7 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
         vaultRegistryCreator = _vaultRegistryCreator;
         bridgeVaultCreator = _bridgeVaultCreator;
     }
-    function getProject(uint256 projectId) public view override returns (Project memory project) {
+    function getProject(uint256 projectId) external view override returns (Project memory project) {
         project = projects[projectId];
     }
     function getProjects(uint256[] calldata projectIds) external view override returns (Project[] memory _projects) {
@@ -53,7 +58,7 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
         _projects = new Project[](length);
         uint256 i = 0;
         while (i < length) {
-            _projects[i] = getProject(projectIds[i]);
+            _projects[i] = projects[projectIds[i]];
             unchecked { i++; }
         }
     }
@@ -65,11 +70,11 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
         _isProjectTroll = projectTrolls.length > 0 && 
                           projectTrolls[ projectTrollsInv[projectId][trollProfileIndex] ] == trollProfileIndex;
     }
-    function isProjectTrollByAddress(uint256 projectId, address troll) public view override returns (bool _isProjectTroll) {
-        uint256 trollProfileIndex = trollRegistry.trollProfileInv(troll);
+    function isProjectTrollByAddress(uint256 projectId, address troll) external view override returns (bool _isProjectTroll) {
+        uint256 trollProfileIndex = trollProfileInv[troll];
         _isProjectTroll = isProjectTroll(projectId, trollProfileIndex);
     }
-    function hashAddTroll(uint256 trollProfileIndex, address troll, uint256 _nonce) public view override returns (bytes32) {
+    function hashTroll(uint256 trollProfileIndex, address troll, uint256 _nonce) public view override returns (bytes32) {
         uint256 chainId;
         assembly {
             chainId := chainid()
@@ -82,21 +87,8 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
             _nonce
         ));
     }
-    function hashUpdateTrollFromTroll(uint256 trollProfileIndex, address newTroll, uint256 _nonce) public pure override returns (bytes32) {
+    function hashUpdateTrollFromOwner(uint256 trollProfileIndex, address newTroll, uint256 _nonce) public pure override returns (bytes32) {
         return keccak256(abi.encodePacked(
-            trollProfileIndex,
-            newTroll,
-            _nonce
-        ));
-    }
-    function hashUpdateTroll(uint256 trollProfileIndex, address newTroll, uint256 _nonce) public view override returns (bytes32) {
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        return keccak256(abi.encodePacked(
-            chainId,
-            address(this),
             trollProfileIndex,
             newTroll,
             _nonce
@@ -176,27 +168,26 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
     }
     function addTroll(bytes[] calldata signatures, uint256 trollProfileIndex, address troll, uint256 _nonce) external override {
         require(msg.sender == troll, "not from troll");
-        bytes32 hash = hashAddTroll(trollProfileIndex, troll, _nonce);
+        bytes32 hash = hashTroll(trollProfileIndex, troll, _nonce);
         _verifySignatures(signatures, hash, _nonce);
         require(troll != address(0), "Invalid troll");
         require(trollProfileIndex != 0, "trollProfileIndex cannot be zero");
-        require(trollProfiles[trollProfileIndex] == address(0), "already added");
+        require(trollProfiles[trollProfileIndex].troll == address(0), "already added");
         require(trollProfileInv[troll] == 0, "already added");
-        trollProfiles[trollProfileIndex] = troll;
+        trollProfiles[trollProfileIndex] = TrollProfile({owner:owner, troll: troll});
         trollProfileInv[troll] = trollProfileIndex;
         emit AddTroll(troll, trollProfileIndex);
     }
-    function updateTroll(bytes[] calldata signatures, bytes calldata trollSignature, uint256 trollProfileIndex, address newTroll, uint256 nonceForTrollSignature, uint256 _nonce) external override {
-        require(msg.sender == trollProfiles[trollProfileIndex], "not from troll");
-        bytes32 hash = hashUpdateTroll(trollProfileIndex, newTroll, _nonce);
+    function updateTroll(bytes[] calldata signatures, bytes calldata ownerSignature, uint256 trollProfileIndex, address newTroll, uint256 nonceForOwnerSignature, uint256 _nonce) external override {
+        require(msg.sender == trollProfiles[trollProfileIndex].troll, "not from troll");
+        bytes32 hash = hashTroll(trollProfileIndex, newTroll, _nonce);
         _verifySignatures(signatures, hash, _nonce);
-        address troll = trollProfiles[trollProfileIndex];
-        require(hashUpdateTrollFromTroll(trollProfileIndex, newTroll, nonceForTrollSignature).toEthSignedMessageHash().recover(trollSignature) == troll, "invalid troll signature");
+        address owner = trollProfiles[trollProfileIndex].owner;
+        require(hashUpdateTrollFromOwner(trollProfileIndex, newTroll, nonceForOwnerSignature).toEthSignedMessageHash().recover(ownerSignature) == owner, "invalid owner signature");
         require(newTroll != address(0), "Invalid troll");
         require(trollProfileInv[newTroll] == 0, "newTroll already exists");
-        require(troll != address(0), "not a valid troll");
-        delete trollProfileInv[troll];
-        trollProfiles[trollProfileIndex] = newTroll;
+        delete trollProfileInv[msg.sender];
+        trollProfiles[trollProfileIndex].troll = newTroll;
         trollProfileInv[newTroll] = trollProfileIndex;
         emit UpdateTroll(trollProfileIndex, newTroll);
     }
@@ -212,7 +203,7 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
 
         {
         bool msgSenderIsProjectTroll;
-        uint256 msgSenderTrollProfileIndex = trollRegistry.trollProfileInv(msg.sender);
+        uint256 msgSenderTrollProfileIndex = trollProfileInv[msg.sender];
         uint256 i = 0;
         uint256 length = projectTrolls.length;
         while (i < length) {
@@ -248,7 +239,7 @@ contract OSWAP_SideChainProjectRegistry is IOSWAP_SideChainProjectRegistry, Auth
         require(projects[projectId].owner != address(0), "invalid projectId");
         {
         // check sender
-        uint256 msgSenderTrollProfileIndex = trollRegistry.trollProfileInv(msg.sender);
+        uint256 msgSenderTrollProfileIndex = trollProfileInv[msg.sender];
         require(projects[projectId].projectTrolls[projectTrollsInv[projectId][msgSenderTrollProfileIndex]] == msgSenderTrollProfileIndex, "not from project troll");
         }
         {

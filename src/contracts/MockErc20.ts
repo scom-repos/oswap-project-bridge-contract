@@ -1,27 +1,32 @@
 import {IWallet, Contract as _Contract, Transaction, TransactionReceipt, BigNumber, Event, IBatchRequestObj, TransactionOptions} from "@ijstech/eth-contract";
-import Bin from "./MintableToken.json";
-export interface IDeployParams {name:string;symbol:string}
+import Bin from "./MockErc20.json";
+export interface IDeployParams {name:string;symbol:string;decimals:number|BigNumber}
 export interface IAllowanceParams {owner:string;spender:string}
 export interface IApproveParams {spender:string;amount:number|BigNumber}
 export interface IBurnFromParams {account:string;amount:number|BigNumber}
 export interface IDecreaseAllowanceParams {spender:string;subtractedValue:number|BigNumber}
+export interface IGetRoleMemberParams {role:string;index:number|BigNumber}
+export interface IGrantRoleParams {role:string;account:string}
+export interface IHasRoleParams {role:string;account:string}
 export interface IIncreaseAllowanceParams {spender:string;addedValue:number|BigNumber}
-export interface IMintParams {account:string;amount:number|BigNumber}
+export interface IMintParams {to:string;amount:number|BigNumber}
+export interface IRenounceRoleParams {role:string;account:string}
+export interface IRevokeRoleParams {role:string;account:string}
 export interface ITransferParams {recipient:string;amount:number|BigNumber}
 export interface ITransferFromParams {sender:string;recipient:string;amount:number|BigNumber}
-export class MintableToken extends _Contract{
+export class MockErc20 extends _Contract{
     static _abi: any = Bin.abi;
     constructor(wallet: IWallet, address?: string){
         super(wallet, address, Bin.abi, Bin.bytecode);
         this.assign()
     }
     deploy(params: IDeployParams, options?: TransactionOptions): Promise<string>{
-        return this.__deploy([params.name,params.symbol], options);
+        return this.__deploy([params.name,params.symbol,this.wallet.utils.toString(params.decimals)], options);
     }
-    parseApprovalEvent(receipt: TransactionReceipt): MintableToken.ApprovalEvent[]{
+    parseApprovalEvent(receipt: TransactionReceipt): MockErc20.ApprovalEvent[]{
         return this.parseEvents(receipt, "Approval").map(e=>this.decodeApprovalEvent(e));
     }
-    decodeApprovalEvent(event: Event): MintableToken.ApprovalEvent{
+    decodeApprovalEvent(event: Event): MockErc20.ApprovalEvent{
         let result = event.data;
         return {
             owner: result.owner,
@@ -30,40 +35,56 @@ export class MintableToken extends _Contract{
             _event: event
         };
     }
-    parseAuthorizeEvent(receipt: TransactionReceipt): MintableToken.AuthorizeEvent[]{
-        return this.parseEvents(receipt, "Authorize").map(e=>this.decodeAuthorizeEvent(e));
+    parsePausedEvent(receipt: TransactionReceipt): MockErc20.PausedEvent[]{
+        return this.parseEvents(receipt, "Paused").map(e=>this.decodePausedEvent(e));
     }
-    decodeAuthorizeEvent(event: Event): MintableToken.AuthorizeEvent{
+    decodePausedEvent(event: Event): MockErc20.PausedEvent{
         let result = event.data;
         return {
-            user: result.user,
+            account: result.account,
             _event: event
         };
     }
-    parseDeauthorizeEvent(receipt: TransactionReceipt): MintableToken.DeauthorizeEvent[]{
-        return this.parseEvents(receipt, "Deauthorize").map(e=>this.decodeDeauthorizeEvent(e));
+    parseRoleAdminChangedEvent(receipt: TransactionReceipt): MockErc20.RoleAdminChangedEvent[]{
+        return this.parseEvents(receipt, "RoleAdminChanged").map(e=>this.decodeRoleAdminChangedEvent(e));
     }
-    decodeDeauthorizeEvent(event: Event): MintableToken.DeauthorizeEvent{
+    decodeRoleAdminChangedEvent(event: Event): MockErc20.RoleAdminChangedEvent{
         let result = event.data;
         return {
-            user: result.user,
+            role: result.role,
+            previousAdminRole: result.previousAdminRole,
+            newAdminRole: result.newAdminRole,
             _event: event
         };
     }
-    parseStartOwnershipTransferEvent(receipt: TransactionReceipt): MintableToken.StartOwnershipTransferEvent[]{
-        return this.parseEvents(receipt, "StartOwnershipTransfer").map(e=>this.decodeStartOwnershipTransferEvent(e));
+    parseRoleGrantedEvent(receipt: TransactionReceipt): MockErc20.RoleGrantedEvent[]{
+        return this.parseEvents(receipt, "RoleGranted").map(e=>this.decodeRoleGrantedEvent(e));
     }
-    decodeStartOwnershipTransferEvent(event: Event): MintableToken.StartOwnershipTransferEvent{
+    decodeRoleGrantedEvent(event: Event): MockErc20.RoleGrantedEvent{
         let result = event.data;
         return {
-            user: result.user,
+            role: result.role,
+            account: result.account,
+            sender: result.sender,
             _event: event
         };
     }
-    parseTransferEvent(receipt: TransactionReceipt): MintableToken.TransferEvent[]{
+    parseRoleRevokedEvent(receipt: TransactionReceipt): MockErc20.RoleRevokedEvent[]{
+        return this.parseEvents(receipt, "RoleRevoked").map(e=>this.decodeRoleRevokedEvent(e));
+    }
+    decodeRoleRevokedEvent(event: Event): MockErc20.RoleRevokedEvent{
+        let result = event.data;
+        return {
+            role: result.role,
+            account: result.account,
+            sender: result.sender,
+            _event: event
+        };
+    }
+    parseTransferEvent(receipt: TransactionReceipt): MockErc20.TransferEvent[]{
         return this.parseEvents(receipt, "Transfer").map(e=>this.decodeTransferEvent(e));
     }
-    decodeTransferEvent(event: Event): MintableToken.TransferEvent{
+    decodeTransferEvent(event: Event): MockErc20.TransferEvent{
         let result = event.data;
         return {
             from: result.from,
@@ -72,15 +93,24 @@ export class MintableToken extends _Contract{
             _event: event
         };
     }
-    parseTransferOwnershipEvent(receipt: TransactionReceipt): MintableToken.TransferOwnershipEvent[]{
-        return this.parseEvents(receipt, "TransferOwnership").map(e=>this.decodeTransferOwnershipEvent(e));
+    parseUnpausedEvent(receipt: TransactionReceipt): MockErc20.UnpausedEvent[]{
+        return this.parseEvents(receipt, "Unpaused").map(e=>this.decodeUnpausedEvent(e));
     }
-    decodeTransferOwnershipEvent(event: Event): MintableToken.TransferOwnershipEvent{
+    decodeUnpausedEvent(event: Event): MockErc20.UnpausedEvent{
         let result = event.data;
         return {
-            user: result.user,
+            account: result.account,
             _event: event
         };
+    }
+    DEFAULT_ADMIN_ROLE: {
+        (options?: TransactionOptions): Promise<string>;
+    }
+    MINTER_ROLE: {
+        (options?: TransactionOptions): Promise<string>;
+    }
+    PAUSER_ROLE: {
+        (options?: TransactionOptions): Promise<string>;
     }
     allowance: {
         (params: IAllowanceParams, options?: TransactionOptions): Promise<BigNumber>;
@@ -107,40 +137,53 @@ export class MintableToken extends _Contract{
         (params: IDecreaseAllowanceParams, options?: TransactionOptions): Promise<TransactionReceipt>;
         call: (params: IDecreaseAllowanceParams, options?: TransactionOptions) => Promise<boolean>;
     }
-    deny: {
-        (user:string, options?: TransactionOptions): Promise<TransactionReceipt>;
-        call: (user:string, options?: TransactionOptions) => Promise<void>;
+    getRoleAdmin: {
+        (role:string, options?: TransactionOptions): Promise<string>;
+    }
+    getRoleMember: {
+        (params: IGetRoleMemberParams, options?: TransactionOptions): Promise<string>;
+    }
+    getRoleMemberCount: {
+        (role:string, options?: TransactionOptions): Promise<BigNumber>;
+    }
+    grantRole: {
+        (params: IGrantRoleParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+        call: (params: IGrantRoleParams, options?: TransactionOptions) => Promise<void>;
+    }
+    hasRole: {
+        (params: IHasRoleParams, options?: TransactionOptions): Promise<boolean>;
     }
     increaseAllowance: {
         (params: IIncreaseAllowanceParams, options?: TransactionOptions): Promise<TransactionReceipt>;
         call: (params: IIncreaseAllowanceParams, options?: TransactionOptions) => Promise<boolean>;
     }
-    isPermitted: {
-        (param1:string, options?: TransactionOptions): Promise<boolean>;
-    }
     mint: {
         (params: IMintParams, options?: TransactionOptions): Promise<TransactionReceipt>;
-        call: (params: IMintParams, options?: TransactionOptions) => Promise<boolean>;
+        call: (params: IMintParams, options?: TransactionOptions) => Promise<void>;
     }
     name: {
         (options?: TransactionOptions): Promise<string>;
     }
-    newOwner: {
-        (options?: TransactionOptions): Promise<string>;
+    pause: {
+        (options?: TransactionOptions): Promise<TransactionReceipt>;
+        call: (options?: TransactionOptions) => Promise<void>;
     }
-    owner: {
-        (options?: TransactionOptions): Promise<string>;
+    paused: {
+        (options?: TransactionOptions): Promise<boolean>;
     }
-    permit: {
-        (user:string, options?: TransactionOptions): Promise<TransactionReceipt>;
-        call: (user:string, options?: TransactionOptions) => Promise<void>;
+    renounceRole: {
+        (params: IRenounceRoleParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+        call: (params: IRenounceRoleParams, options?: TransactionOptions) => Promise<void>;
+    }
+    revokeRole: {
+        (params: IRevokeRoleParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+        call: (params: IRevokeRoleParams, options?: TransactionOptions) => Promise<void>;
+    }
+    supportsInterface: {
+        (interfaceId:string, options?: TransactionOptions): Promise<boolean>;
     }
     symbol: {
         (options?: TransactionOptions): Promise<string>;
-    }
-    takeOwnership: {
-        (options?: TransactionOptions): Promise<TransactionReceipt>;
-        call: (options?: TransactionOptions) => Promise<void>;
     }
     totalSupply: {
         (options?: TransactionOptions): Promise<BigNumber>;
@@ -153,11 +196,26 @@ export class MintableToken extends _Contract{
         (params: ITransferFromParams, options?: TransactionOptions): Promise<TransactionReceipt>;
         call: (params: ITransferFromParams, options?: TransactionOptions) => Promise<boolean>;
     }
-    transferOwnership: {
-        (newOwner:string, options?: TransactionOptions): Promise<TransactionReceipt>;
-        call: (newOwner:string, options?: TransactionOptions) => Promise<void>;
+    unpause: {
+        (options?: TransactionOptions): Promise<TransactionReceipt>;
+        call: (options?: TransactionOptions) => Promise<void>;
     }
     private assign(){
+        let DEFAULT_ADMIN_ROLE_call = async (options?: TransactionOptions): Promise<string> => {
+            let result = await this.call('DEFAULT_ADMIN_ROLE',[],options);
+            return result;
+        }
+        this.DEFAULT_ADMIN_ROLE = DEFAULT_ADMIN_ROLE_call
+        let MINTER_ROLE_call = async (options?: TransactionOptions): Promise<string> => {
+            let result = await this.call('MINTER_ROLE',[],options);
+            return result;
+        }
+        this.MINTER_ROLE = MINTER_ROLE_call
+        let PAUSER_ROLE_call = async (options?: TransactionOptions): Promise<string> => {
+            let result = await this.call('PAUSER_ROLE',[],options);
+            return result;
+        }
+        this.PAUSER_ROLE = PAUSER_ROLE_call
         let allowanceParams = (params: IAllowanceParams) => [params.owner,params.spender];
         let allowance_call = async (params: IAllowanceParams, options?: TransactionOptions): Promise<BigNumber> => {
             let result = await this.call('allowance',allowanceParams(params),options);
@@ -174,26 +232,43 @@ export class MintableToken extends _Contract{
             return new BigNumber(result);
         }
         this.decimals = decimals_call
-        let isPermitted_call = async (param1:string, options?: TransactionOptions): Promise<boolean> => {
-            let result = await this.call('isPermitted',[param1],options);
+        let getRoleAdmin_call = async (role:string, options?: TransactionOptions): Promise<string> => {
+            let result = await this.call('getRoleAdmin',[this.wallet.utils.stringToBytes32(role)],options);
             return result;
         }
-        this.isPermitted = isPermitted_call
+        this.getRoleAdmin = getRoleAdmin_call
+        let getRoleMemberParams = (params: IGetRoleMemberParams) => [this.wallet.utils.stringToBytes32(params.role),this.wallet.utils.toString(params.index)];
+        let getRoleMember_call = async (params: IGetRoleMemberParams, options?: TransactionOptions): Promise<string> => {
+            let result = await this.call('getRoleMember',getRoleMemberParams(params),options);
+            return result;
+        }
+        this.getRoleMember = getRoleMember_call
+        let getRoleMemberCount_call = async (role:string, options?: TransactionOptions): Promise<BigNumber> => {
+            let result = await this.call('getRoleMemberCount',[this.wallet.utils.stringToBytes32(role)],options);
+            return new BigNumber(result);
+        }
+        this.getRoleMemberCount = getRoleMemberCount_call
+        let hasRoleParams = (params: IHasRoleParams) => [this.wallet.utils.stringToBytes32(params.role),params.account];
+        let hasRole_call = async (params: IHasRoleParams, options?: TransactionOptions): Promise<boolean> => {
+            let result = await this.call('hasRole',hasRoleParams(params),options);
+            return result;
+        }
+        this.hasRole = hasRole_call
         let name_call = async (options?: TransactionOptions): Promise<string> => {
             let result = await this.call('name',[],options);
             return result;
         }
         this.name = name_call
-        let newOwner_call = async (options?: TransactionOptions): Promise<string> => {
-            let result = await this.call('newOwner',[],options);
+        let paused_call = async (options?: TransactionOptions): Promise<boolean> => {
+            let result = await this.call('paused',[],options);
             return result;
         }
-        this.newOwner = newOwner_call
-        let owner_call = async (options?: TransactionOptions): Promise<string> => {
-            let result = await this.call('owner',[],options);
+        this.paused = paused_call
+        let supportsInterface_call = async (interfaceId:string, options?: TransactionOptions): Promise<boolean> => {
+            let result = await this.call('supportsInterface',[interfaceId],options);
             return result;
         }
-        this.owner = owner_call
+        this.supportsInterface = supportsInterface_call
         let symbol_call = async (options?: TransactionOptions): Promise<string> => {
             let result = await this.call('symbol',[],options);
             return result;
@@ -251,16 +326,17 @@ export class MintableToken extends _Contract{
         this.decreaseAllowance = Object.assign(decreaseAllowance_send, {
             call:decreaseAllowance_call
         });
-        let deny_send = async (user:string, options?: TransactionOptions): Promise<TransactionReceipt> => {
-            let result = await this.send('deny',[user],options);
+        let grantRoleParams = (params: IGrantRoleParams) => [this.wallet.utils.stringToBytes32(params.role),params.account];
+        let grantRole_send = async (params: IGrantRoleParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
+            let result = await this.send('grantRole',grantRoleParams(params),options);
             return result;
         }
-        let deny_call = async (user:string, options?: TransactionOptions): Promise<void> => {
-            let result = await this.call('deny',[user],options);
+        let grantRole_call = async (params: IGrantRoleParams, options?: TransactionOptions): Promise<void> => {
+            let result = await this.call('grantRole',grantRoleParams(params),options);
             return;
         }
-        this.deny = Object.assign(deny_send, {
-            call:deny_call
+        this.grantRole = Object.assign(grantRole_send, {
+            call:grantRole_call
         });
         let increaseAllowanceParams = (params: IIncreaseAllowanceParams) => [params.spender,this.wallet.utils.toString(params.addedValue)];
         let increaseAllowance_send = async (params: IIncreaseAllowanceParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
@@ -274,39 +350,52 @@ export class MintableToken extends _Contract{
         this.increaseAllowance = Object.assign(increaseAllowance_send, {
             call:increaseAllowance_call
         });
-        let mintParams = (params: IMintParams) => [params.account,this.wallet.utils.toString(params.amount)];
+        let mintParams = (params: IMintParams) => [params.to,this.wallet.utils.toString(params.amount)];
         let mint_send = async (params: IMintParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('mint',mintParams(params),options);
             return result;
         }
-        let mint_call = async (params: IMintParams, options?: TransactionOptions): Promise<boolean> => {
+        let mint_call = async (params: IMintParams, options?: TransactionOptions): Promise<void> => {
             let result = await this.call('mint',mintParams(params),options);
-            return result;
+            return;
         }
         this.mint = Object.assign(mint_send, {
             call:mint_call
         });
-        let permit_send = async (user:string, options?: TransactionOptions): Promise<TransactionReceipt> => {
-            let result = await this.send('permit',[user],options);
+        let pause_send = async (options?: TransactionOptions): Promise<TransactionReceipt> => {
+            let result = await this.send('pause',[],options);
             return result;
         }
-        let permit_call = async (user:string, options?: TransactionOptions): Promise<void> => {
-            let result = await this.call('permit',[user],options);
+        let pause_call = async (options?: TransactionOptions): Promise<void> => {
+            let result = await this.call('pause',[],options);
             return;
         }
-        this.permit = Object.assign(permit_send, {
-            call:permit_call
+        this.pause = Object.assign(pause_send, {
+            call:pause_call
         });
-        let takeOwnership_send = async (options?: TransactionOptions): Promise<TransactionReceipt> => {
-            let result = await this.send('takeOwnership',[],options);
+        let renounceRoleParams = (params: IRenounceRoleParams) => [this.wallet.utils.stringToBytes32(params.role),params.account];
+        let renounceRole_send = async (params: IRenounceRoleParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
+            let result = await this.send('renounceRole',renounceRoleParams(params),options);
             return result;
         }
-        let takeOwnership_call = async (options?: TransactionOptions): Promise<void> => {
-            let result = await this.call('takeOwnership',[],options);
+        let renounceRole_call = async (params: IRenounceRoleParams, options?: TransactionOptions): Promise<void> => {
+            let result = await this.call('renounceRole',renounceRoleParams(params),options);
             return;
         }
-        this.takeOwnership = Object.assign(takeOwnership_send, {
-            call:takeOwnership_call
+        this.renounceRole = Object.assign(renounceRole_send, {
+            call:renounceRole_call
+        });
+        let revokeRoleParams = (params: IRevokeRoleParams) => [this.wallet.utils.stringToBytes32(params.role),params.account];
+        let revokeRole_send = async (params: IRevokeRoleParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
+            let result = await this.send('revokeRole',revokeRoleParams(params),options);
+            return result;
+        }
+        let revokeRole_call = async (params: IRevokeRoleParams, options?: TransactionOptions): Promise<void> => {
+            let result = await this.call('revokeRole',revokeRoleParams(params),options);
+            return;
+        }
+        this.revokeRole = Object.assign(revokeRole_send, {
+            call:revokeRole_call
         });
         let transferParams = (params: ITransferParams) => [params.recipient,this.wallet.utils.toString(params.amount)];
         let transfer_send = async (params: ITransferParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
@@ -332,24 +421,25 @@ export class MintableToken extends _Contract{
         this.transferFrom = Object.assign(transferFrom_send, {
             call:transferFrom_call
         });
-        let transferOwnership_send = async (newOwner:string, options?: TransactionOptions): Promise<TransactionReceipt> => {
-            let result = await this.send('transferOwnership',[newOwner],options);
+        let unpause_send = async (options?: TransactionOptions): Promise<TransactionReceipt> => {
+            let result = await this.send('unpause',[],options);
             return result;
         }
-        let transferOwnership_call = async (newOwner:string, options?: TransactionOptions): Promise<void> => {
-            let result = await this.call('transferOwnership',[newOwner],options);
+        let unpause_call = async (options?: TransactionOptions): Promise<void> => {
+            let result = await this.call('unpause',[],options);
             return;
         }
-        this.transferOwnership = Object.assign(transferOwnership_send, {
-            call:transferOwnership_call
+        this.unpause = Object.assign(unpause_send, {
+            call:unpause_call
         });
     }
 }
-export module MintableToken{
+export module MockErc20{
     export interface ApprovalEvent {owner:string,spender:string,value:BigNumber,_event:Event}
-    export interface AuthorizeEvent {user:string,_event:Event}
-    export interface DeauthorizeEvent {user:string,_event:Event}
-    export interface StartOwnershipTransferEvent {user:string,_event:Event}
+    export interface PausedEvent {account:string,_event:Event}
+    export interface RoleAdminChangedEvent {role:string,previousAdminRole:string,newAdminRole:string,_event:Event}
+    export interface RoleGrantedEvent {role:string,account:string,sender:string,_event:Event}
+    export interface RoleRevokedEvent {role:string,account:string,sender:string,_event:Event}
     export interface TransferEvent {from:string,to:string,value:BigNumber,_event:Event}
-    export interface TransferOwnershipEvent {user:string,_event:Event}
+    export interface UnpausedEvent {account:string,_event:Event}
 }

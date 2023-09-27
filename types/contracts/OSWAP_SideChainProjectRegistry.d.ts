@@ -5,11 +5,6 @@ export interface IAddTrollParams {
     troll: string;
     nonce: number | BigNumber;
 }
-export interface IHashAddTrollParams {
-    trollProfileIndex: number | BigNumber;
-    troll: string;
-    nonce: number | BigNumber;
-}
 export interface IHashNewVaultParams {
     projectId: number | BigNumber;
     asset: string;
@@ -20,6 +15,11 @@ export interface IHashNewVaultParams {
 export interface IHashNewVaultFormOwnerParams {
     asset: string;
     projectTrolls: (number | BigNumber)[];
+    nonce: number | BigNumber;
+}
+export interface IHashTrollParams {
+    trollProfileIndex: number | BigNumber;
+    troll: string;
     nonce: number | BigNumber;
 }
 export interface IHashUpdateProjectParams {
@@ -36,12 +36,7 @@ export interface IHashUpdateProjectFromOwnerParams {
     trollsToAdd: (number | BigNumber)[];
     nonce: number | BigNumber;
 }
-export interface IHashUpdateTrollParams {
-    trollProfileIndex: number | BigNumber;
-    newTroll: string;
-    nonce: number | BigNumber;
-}
-export interface IHashUpdateTrollFromTrollParams {
+export interface IHashUpdateTrollFromOwnerParams {
     trollProfileIndex: number | BigNumber;
     newTroll: string;
     nonce: number | BigNumber;
@@ -84,10 +79,10 @@ export interface IUpdateProjectParams {
 }
 export interface IUpdateTrollParams {
     signatures: string[];
-    trollSignature: string;
+    ownerSignature: string;
     trollProfileIndex: number | BigNumber;
     newTroll: string;
-    nonceForTrollSignature: number | BigNumber;
+    nonceForOwnerSignature: number | BigNumber;
     nonce: number | BigNumber;
 }
 export interface IUsedProjectNonceParams {
@@ -143,14 +138,14 @@ export declare class OSWAP_SideChainProjectRegistry extends _Contract {
             projectTrolls: BigNumber[];
         }[]>;
     };
-    hashAddTroll: {
-        (params: IHashAddTrollParams, options?: TransactionOptions): Promise<string>;
-    };
     hashNewVault: {
         (params: IHashNewVaultParams, options?: TransactionOptions): Promise<string>;
     };
     hashNewVaultFormOwner: {
         (params: IHashNewVaultFormOwnerParams, options?: TransactionOptions): Promise<string>;
+    };
+    hashTroll: {
+        (params: IHashTrollParams, options?: TransactionOptions): Promise<string>;
     };
     hashUpdateProject: {
         (params: IHashUpdateProjectParams, options?: TransactionOptions): Promise<string>;
@@ -158,11 +153,8 @@ export declare class OSWAP_SideChainProjectRegistry extends _Contract {
     hashUpdateProjectFromOwner: {
         (params: IHashUpdateProjectFromOwnerParams, options?: TransactionOptions): Promise<string>;
     };
-    hashUpdateTroll: {
-        (params: IHashUpdateTrollParams, options?: TransactionOptions): Promise<string>;
-    };
-    hashUpdateTrollFromTroll: {
-        (params: IHashUpdateTrollFromTrollParams, options?: TransactionOptions): Promise<string>;
+    hashUpdateTrollFromOwner: {
+        (params: IHashUpdateTrollFromOwnerParams, options?: TransactionOptions): Promise<string>;
     };
     initAddress: {
         (params: IInitAddressParams, options?: TransactionOptions): Promise<TransactionReceipt>;
@@ -209,7 +201,10 @@ export declare class OSWAP_SideChainProjectRegistry extends _Contract {
         (param1: string, options?: TransactionOptions): Promise<BigNumber>;
     };
     trollProfiles: {
-        (param1: number | BigNumber, options?: TransactionOptions): Promise<string>;
+        (param1: number | BigNumber, options?: TransactionOptions): Promise<{
+            owner: string;
+            troll: string;
+        }>;
     };
     trollRegistry: {
         (options?: TransactionOptions): Promise<string>;

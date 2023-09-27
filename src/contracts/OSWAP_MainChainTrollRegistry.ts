@@ -14,7 +14,7 @@ export interface IStakeTrollParams {trollProfileIndex:number|BigNumber;nft:strin
 export interface IStakedByParams {param1:number|BigNumber;param2:number|BigNumber}
 export interface IStakedByInvParams {param1:string;param2:number|BigNumber}
 export interface IUnstakeTrollParams {nft:string;tokenId:number|BigNumber}
-export interface IUpdateNftParams {nft:string;trolltype:number|BigNumber}
+export interface IUpdateNftParams {nft:string;trollType:number|BigNumber}
 export interface IUpdateTrollParams {trollProfileIndex:number|BigNumber;newTroll:string;signature:string}
 export class OSWAP_MainChainTrollRegistry extends _Contract{
     static _abi: any = Bin.abi;
@@ -35,6 +35,17 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
             troll: result.troll,
             trollProfileIndex: new BigNumber(result.trollProfileIndex),
             trollType: new BigNumber(result.trollType),
+            _event: event
+        };
+    }
+    parseAddTrollTypeEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.AddTrollTypeEvent[]{
+        return this.parseEvents(receipt, "AddTrollType").map(e=>this.decodeAddTrollTypeEvent(e));
+    }
+    decodeAddTrollTypeEvent(event: Event): OSWAP_MainChainTrollRegistry.AddTrollTypeEvent{
+        let result = event.data;
+        return {
+            trollType: new BigNumber(result.trollType),
+            name: result.name,
             _event: event
         };
     }
@@ -182,6 +193,18 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
             _event: event
         };
     }
+    BlockedGeneralTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    }
+    BlockedSuperTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    }
+    GeneralTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    }
+    SuperTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    }
     addStakesTroll: {
         (params: IAddStakesTrollParams, options?: TransactionOptions): Promise<TransactionReceipt>;
         call: (params: IAddStakesTrollParams, options?: TransactionOptions) => Promise<void>;
@@ -189,6 +212,10 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
     addTroll: {
         (params: IAddTrollParams, options?: TransactionOptions): Promise<TransactionReceipt>;
         call: (params: IAddTrollParams, options?: TransactionOptions) => Promise<void>;
+    }
+    addTrollType: {
+        (name:string, options?: TransactionOptions): Promise<TransactionReceipt>;
+        call: (name:string, options?: TransactionOptions) => Promise<void>;
     }
     backerStaking: {
         (params: IBackerStakingParams, options?: TransactionOptions): Promise<{nft:string,tokenId:BigNumber,trollProfileIndex:BigNumber,timestamp:BigNumber}[]>;
@@ -357,6 +384,26 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         (options?: TransactionOptions): Promise<string>;
     }
     private assign(){
+        let BlockedGeneralTroll_call = async (options?: TransactionOptions): Promise<BigNumber> => {
+            let result = await this.call('BlockedGeneralTroll',[],options);
+            return new BigNumber(result);
+        }
+        this.BlockedGeneralTroll = BlockedGeneralTroll_call
+        let BlockedSuperTroll_call = async (options?: TransactionOptions): Promise<BigNumber> => {
+            let result = await this.call('BlockedSuperTroll',[],options);
+            return new BigNumber(result);
+        }
+        this.BlockedSuperTroll = BlockedSuperTroll_call
+        let GeneralTroll_call = async (options?: TransactionOptions): Promise<BigNumber> => {
+            let result = await this.call('GeneralTroll',[],options);
+            return new BigNumber(result);
+        }
+        this.GeneralTroll = GeneralTroll_call
+        let SuperTroll_call = async (options?: TransactionOptions): Promise<BigNumber> => {
+            let result = await this.call('SuperTroll',[],options);
+            return new BigNumber(result);
+        }
+        this.SuperTroll = SuperTroll_call
         let backerStakingParams = (params: IBackerStakingParams) => [params.backer,this.wallet.utils.toString(params.start),this.wallet.utils.toString(params.length)];
         let backerStaking_call = async (params: IBackerStakingParams, options?: TransactionOptions): Promise<{nft:string,tokenId:BigNumber,trollProfileIndex:BigNumber,timestamp:BigNumber}[]> => {
             let result = await this.call('backerStaking',backerStakingParams(params),options);
@@ -643,6 +690,17 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         this.addTroll = Object.assign(addTroll_send, {
             call:addTroll_call
         });
+        let addTrollType_send = async (name:string, options?: TransactionOptions): Promise<TransactionReceipt> => {
+            let result = await this.send('addTrollType',[this.wallet.utils.stringToBytes(name)],options);
+            return result;
+        }
+        let addTrollType_call = async (name:string, options?: TransactionOptions): Promise<void> => {
+            let result = await this.call('addTrollType',[this.wallet.utils.stringToBytes(name)],options);
+            return;
+        }
+        this.addTrollType = Object.assign(addTrollType_send, {
+            call:addTrollType_call
+        });
         let deny_send = async (user:string, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('deny',[user],options);
             return result;
@@ -767,7 +825,7 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         this.unstakeTroll = Object.assign(unstakeTroll_send, {
             call:unstakeTroll_call
         });
-        let updateNftParams = (params: IUpdateNftParams) => [params.nft,this.wallet.utils.toString(params.trolltype)];
+        let updateNftParams = (params: IUpdateNftParams) => [params.nft,this.wallet.utils.toString(params.trollType)];
         let updateNft_send = async (params: IUpdateNftParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('updateNft',updateNftParams(params),options);
             return result;
@@ -828,6 +886,7 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
 }
 export module OSWAP_MainChainTrollRegistry{
     export interface AddTrollEvent {owner:string,troll:string,trollProfileIndex:BigNumber,trollType:BigNumber,_event:Event}
+    export interface AddTrollTypeEvent {trollType:BigNumber,name:string,_event:Event}
     export interface AuthorizeEvent {user:string,_event:Event}
     export interface BlockNftTokenIdEvent {nft:string,tokenId:BigNumber,blocked:boolean,_event:Event}
     export interface DeauthorizeEvent {user:string,_event:Event}

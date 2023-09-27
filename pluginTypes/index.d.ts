@@ -573,12 +573,12 @@ declare module "@scom/oswap-project-bridge-contract/contracts/MintableToken.ts" 
         amount: number | BigNumber;
     }
     export interface ITransferParams {
-        to: string;
+        recipient: string;
         amount: number | BigNumber;
     }
     export interface ITransferFromParams {
-        from: string;
-        to: string;
+        sender: string;
+        recipient: string;
         amount: number | BigNumber;
     }
     export class MintableToken extends _Contract {
@@ -705,8 +705,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/MintableToken.ts" 
         }
     }
 }
-/// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry.json.ts" />
-declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry.json.ts" {
+/// <amd-module name="@scom/oswap-project-bridge-contract/contracts/MockErc20.json.ts" />
+declare module "@scom/oswap-project-bridge-contract/contracts/MockErc20.json.ts" {
     const _default_3: {
         abi: ({
             inputs: {
@@ -750,6 +750,271 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultT
         bytecode: string;
     };
     export default _default_3;
+}
+/// <amd-module name="@scom/oswap-project-bridge-contract/contracts/MockErc20.ts" />
+declare module "@scom/oswap-project-bridge-contract/contracts/MockErc20.ts" {
+    import { IWallet, Contract as _Contract, TransactionReceipt, BigNumber, Event, TransactionOptions } from "@ijstech/eth-contract";
+    export interface IDeployParams {
+        name: string;
+        symbol: string;
+        decimals: number | BigNumber;
+    }
+    export interface IAllowanceParams {
+        owner: string;
+        spender: string;
+    }
+    export interface IApproveParams {
+        spender: string;
+        amount: number | BigNumber;
+    }
+    export interface IBurnFromParams {
+        account: string;
+        amount: number | BigNumber;
+    }
+    export interface IDecreaseAllowanceParams {
+        spender: string;
+        subtractedValue: number | BigNumber;
+    }
+    export interface IGetRoleMemberParams {
+        role: string;
+        index: number | BigNumber;
+    }
+    export interface IGrantRoleParams {
+        role: string;
+        account: string;
+    }
+    export interface IHasRoleParams {
+        role: string;
+        account: string;
+    }
+    export interface IIncreaseAllowanceParams {
+        spender: string;
+        addedValue: number | BigNumber;
+    }
+    export interface IMintParams {
+        to: string;
+        amount: number | BigNumber;
+    }
+    export interface IRenounceRoleParams {
+        role: string;
+        account: string;
+    }
+    export interface IRevokeRoleParams {
+        role: string;
+        account: string;
+    }
+    export interface ITransferParams {
+        recipient: string;
+        amount: number | BigNumber;
+    }
+    export interface ITransferFromParams {
+        sender: string;
+        recipient: string;
+        amount: number | BigNumber;
+    }
+    export class MockErc20 extends _Contract {
+        static _abi: any;
+        constructor(wallet: IWallet, address?: string);
+        deploy(params: IDeployParams, options?: TransactionOptions): Promise<string>;
+        parseApprovalEvent(receipt: TransactionReceipt): MockErc20.ApprovalEvent[];
+        decodeApprovalEvent(event: Event): MockErc20.ApprovalEvent;
+        parsePausedEvent(receipt: TransactionReceipt): MockErc20.PausedEvent[];
+        decodePausedEvent(event: Event): MockErc20.PausedEvent;
+        parseRoleAdminChangedEvent(receipt: TransactionReceipt): MockErc20.RoleAdminChangedEvent[];
+        decodeRoleAdminChangedEvent(event: Event): MockErc20.RoleAdminChangedEvent;
+        parseRoleGrantedEvent(receipt: TransactionReceipt): MockErc20.RoleGrantedEvent[];
+        decodeRoleGrantedEvent(event: Event): MockErc20.RoleGrantedEvent;
+        parseRoleRevokedEvent(receipt: TransactionReceipt): MockErc20.RoleRevokedEvent[];
+        decodeRoleRevokedEvent(event: Event): MockErc20.RoleRevokedEvent;
+        parseTransferEvent(receipt: TransactionReceipt): MockErc20.TransferEvent[];
+        decodeTransferEvent(event: Event): MockErc20.TransferEvent;
+        parseUnpausedEvent(receipt: TransactionReceipt): MockErc20.UnpausedEvent[];
+        decodeUnpausedEvent(event: Event): MockErc20.UnpausedEvent;
+        DEFAULT_ADMIN_ROLE: {
+            (options?: TransactionOptions): Promise<string>;
+        };
+        MINTER_ROLE: {
+            (options?: TransactionOptions): Promise<string>;
+        };
+        PAUSER_ROLE: {
+            (options?: TransactionOptions): Promise<string>;
+        };
+        allowance: {
+            (params: IAllowanceParams, options?: TransactionOptions): Promise<BigNumber>;
+        };
+        approve: {
+            (params: IApproveParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IApproveParams, options?: TransactionOptions) => Promise<boolean>;
+        };
+        balanceOf: {
+            (account: string, options?: TransactionOptions): Promise<BigNumber>;
+        };
+        burn: {
+            (amount: number | BigNumber, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (amount: number | BigNumber, options?: TransactionOptions) => Promise<void>;
+        };
+        burnFrom: {
+            (params: IBurnFromParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IBurnFromParams, options?: TransactionOptions) => Promise<void>;
+        };
+        decimals: {
+            (options?: TransactionOptions): Promise<BigNumber>;
+        };
+        decreaseAllowance: {
+            (params: IDecreaseAllowanceParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IDecreaseAllowanceParams, options?: TransactionOptions) => Promise<boolean>;
+        };
+        getRoleAdmin: {
+            (role: string, options?: TransactionOptions): Promise<string>;
+        };
+        getRoleMember: {
+            (params: IGetRoleMemberParams, options?: TransactionOptions): Promise<string>;
+        };
+        getRoleMemberCount: {
+            (role: string, options?: TransactionOptions): Promise<BigNumber>;
+        };
+        grantRole: {
+            (params: IGrantRoleParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IGrantRoleParams, options?: TransactionOptions) => Promise<void>;
+        };
+        hasRole: {
+            (params: IHasRoleParams, options?: TransactionOptions): Promise<boolean>;
+        };
+        increaseAllowance: {
+            (params: IIncreaseAllowanceParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IIncreaseAllowanceParams, options?: TransactionOptions) => Promise<boolean>;
+        };
+        mint: {
+            (params: IMintParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IMintParams, options?: TransactionOptions) => Promise<void>;
+        };
+        name: {
+            (options?: TransactionOptions): Promise<string>;
+        };
+        pause: {
+            (options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (options?: TransactionOptions) => Promise<void>;
+        };
+        paused: {
+            (options?: TransactionOptions): Promise<boolean>;
+        };
+        renounceRole: {
+            (params: IRenounceRoleParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IRenounceRoleParams, options?: TransactionOptions) => Promise<void>;
+        };
+        revokeRole: {
+            (params: IRevokeRoleParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: IRevokeRoleParams, options?: TransactionOptions) => Promise<void>;
+        };
+        supportsInterface: {
+            (interfaceId: string, options?: TransactionOptions): Promise<boolean>;
+        };
+        symbol: {
+            (options?: TransactionOptions): Promise<string>;
+        };
+        totalSupply: {
+            (options?: TransactionOptions): Promise<BigNumber>;
+        };
+        transfer: {
+            (params: ITransferParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: ITransferParams, options?: TransactionOptions) => Promise<boolean>;
+        };
+        transferFrom: {
+            (params: ITransferFromParams, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (params: ITransferFromParams, options?: TransactionOptions) => Promise<boolean>;
+        };
+        unpause: {
+            (options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (options?: TransactionOptions) => Promise<void>;
+        };
+        private assign;
+    }
+    export module MockErc20 {
+        interface ApprovalEvent {
+            owner: string;
+            spender: string;
+            value: BigNumber;
+            _event: Event;
+        }
+        interface PausedEvent {
+            account: string;
+            _event: Event;
+        }
+        interface RoleAdminChangedEvent {
+            role: string;
+            previousAdminRole: string;
+            newAdminRole: string;
+            _event: Event;
+        }
+        interface RoleGrantedEvent {
+            role: string;
+            account: string;
+            sender: string;
+            _event: Event;
+        }
+        interface RoleRevokedEvent {
+            role: string;
+            account: string;
+            sender: string;
+            _event: Event;
+        }
+        interface TransferEvent {
+            from: string;
+            to: string;
+            value: BigNumber;
+            _event: Event;
+        }
+        interface UnpausedEvent {
+            account: string;
+            _event: Event;
+        }
+    }
+}
+/// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry.json.ts" />
+declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry.json.ts" {
+    const _default_4: {
+        abi: ({
+            inputs: {
+                internalType: string;
+                name: string;
+                type: string;
+            }[];
+            stateMutability: string;
+            type: string;
+            anonymous?: undefined;
+            name?: undefined;
+            outputs?: undefined;
+        } | {
+            anonymous: boolean;
+            inputs: {
+                indexed: boolean;
+                internalType: string;
+                name: string;
+                type: string;
+            }[];
+            name: string;
+            type: string;
+            stateMutability?: undefined;
+            outputs?: undefined;
+        } | {
+            inputs: {
+                internalType: string;
+                name: string;
+                type: string;
+            }[];
+            name: string;
+            outputs: {
+                internalType: string;
+                name: string;
+                type: string;
+            }[];
+            stateMutability: string;
+            type: string;
+            anonymous?: undefined;
+        })[];
+        bytecode: string;
+    };
+    export default _default_4;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry.ts" {
@@ -957,7 +1222,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultT
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2.json.ts" {
-    const _default_4: {
+    const _default_5: {
         abi: ({
             inputs: any[];
             stateMutability: string;
@@ -995,7 +1260,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultT
         })[];
         bytecode: string;
     };
-    export default _default_4;
+    export default _default_5;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2.ts" {
@@ -1209,7 +1474,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultT
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2Creator.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2Creator.json.ts" {
-    const _default_5: {
+    const _default_6: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -1237,7 +1502,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultT
         })[];
         bytecode: string;
     };
-    export default _default_5;
+    export default _default_6;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2Creator.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2Creator.ts" {
@@ -1269,7 +1534,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultT
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistry.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistry.json.ts" {
-    const _default_6: {
+    const _default_7: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -1357,7 +1622,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistr
         })[];
         bytecode: string;
     };
-    export default _default_6;
+    export default _default_7;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistry.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistry.ts" {
@@ -1590,7 +1855,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistr
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistryExecutor.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistryExecutor.json.ts" {
-    const _default_7: {
+    const _default_8: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -1639,7 +1904,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistr
         })[];
         bytecode: string;
     };
-    export default _default_7;
+    export default _default_8;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistryExecutor.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistryExecutor.ts" {
@@ -1675,7 +1940,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ChainRegistr
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStore.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStore.json.ts" {
-    const _default_8: {
+    const _default_9: {
         abi: ({
             inputs: {
                 components: {
@@ -1722,7 +1987,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStore.
         })[];
         bytecode: string;
     };
-    export default _default_8;
+    export default _default_9;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStore.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStore.ts" {
@@ -1946,7 +2211,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStore.
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStoreTradeVault.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStoreTradeVault.json.ts" {
-    const _default_9: {
+    const _default_10: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -1995,7 +2260,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStoreT
         })[];
         bytecode: string;
     };
-    export default _default_9;
+    export default _default_10;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStoreTradeVault.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStoreTradeVault.ts" {
@@ -2056,7 +2321,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ConfigStoreT
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ContractProxy.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ContractProxy.json.ts" {
-    const _default_10: {
+    const _default_11: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -2105,7 +2370,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ContractProx
         })[];
         bytecode: string;
     };
-    export default _default_10;
+    export default _default_11;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_ContractProxy.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ContractProxy.ts" {
@@ -2216,7 +2481,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_ContractProx
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainProjectRegistry.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainProjectRegistry.json.ts" {
-    const _default_11: {
+    const _default_12: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -2268,11 +2533,15 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainPro
         })[];
         bytecode: string;
     };
-    export default _default_11;
+    export default _default_12;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainProjectRegistry.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainProjectRegistry.ts" {
     import { IWallet, Contract as _Contract, TransactionReceipt, BigNumber, Event, TransactionOptions } from "@ijstech/eth-contract";
+    export interface IDeployParams {
+        trollRegistry: string;
+        trollType: number | BigNumber;
+    }
     export interface IAddProjectTokenParams {
         projectId: number | BigNumber;
         tokens: {
@@ -2323,7 +2592,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainPro
     export class OSWAP_MainChainProjectRegistry extends _Contract {
         static _abi: any;
         constructor(wallet: IWallet, address?: string);
-        deploy(trollRegistry: string, options?: TransactionOptions): Promise<string>;
+        deploy(params: IDeployParams, options?: TransactionOptions): Promise<string>;
         parseAddTrollsEvent(receipt: TransactionReceipt): OSWAP_MainChainProjectRegistry.AddTrollsEvent[];
         decodeAddTrollsEvent(event: Event): OSWAP_MainChainProjectRegistry.AddTrollsEvent;
         parseAuthorizeEvent(receipt: TransactionReceipt): OSWAP_MainChainProjectRegistry.AuthorizeEvent[];
@@ -2446,6 +2715,9 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainPro
         trollRegistry: {
             (options?: TransactionOptions): Promise<string>;
         };
+        trollType: {
+            (options?: TransactionOptions): Promise<BigNumber>;
+        };
         private assign;
     }
     export module OSWAP_MainChainProjectRegistry {
@@ -2516,7 +2788,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainPro
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTrollRegistry.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTrollRegistry.json.ts" {
-    const _default_12: {
+    const _default_13: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -2568,7 +2840,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
         })[];
         bytecode: string;
     };
-    export default _default_12;
+    export default _default_13;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTrollRegistry.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTrollRegistry.ts" {
@@ -2638,7 +2910,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
     }
     export interface IUpdateNftParams {
         nft: string;
-        trolltype: number | BigNumber;
+        trollType: number | BigNumber;
     }
     export interface IUpdateTrollParams {
         trollProfileIndex: number | BigNumber;
@@ -2651,6 +2923,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
         deploy(params: IDeployParams, options?: TransactionOptions): Promise<string>;
         parseAddTrollEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.AddTrollEvent[];
         decodeAddTrollEvent(event: Event): OSWAP_MainChainTrollRegistry.AddTrollEvent;
+        parseAddTrollTypeEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.AddTrollTypeEvent[];
+        decodeAddTrollTypeEvent(event: Event): OSWAP_MainChainTrollRegistry.AddTrollTypeEvent;
         parseAuthorizeEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.AuthorizeEvent[];
         decodeAuthorizeEvent(event: Event): OSWAP_MainChainTrollRegistry.AuthorizeEvent;
         parseBlockNftTokenIdEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.BlockNftTokenIdEvent[];
@@ -2677,6 +2951,18 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
         decodeUpdateVotingManagerEvent(event: Event): OSWAP_MainChainTrollRegistry.UpdateVotingManagerEvent;
         parseUpgradeEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.UpgradeEvent[];
         decodeUpgradeEvent(event: Event): OSWAP_MainChainTrollRegistry.UpgradeEvent;
+        BlockedGeneralTroll: {
+            (options?: TransactionOptions): Promise<BigNumber>;
+        };
+        BlockedSuperTroll: {
+            (options?: TransactionOptions): Promise<BigNumber>;
+        };
+        GeneralTroll: {
+            (options?: TransactionOptions): Promise<BigNumber>;
+        };
+        SuperTroll: {
+            (options?: TransactionOptions): Promise<BigNumber>;
+        };
         addStakesTroll: {
             (params: IAddStakesTrollParams, options?: TransactionOptions): Promise<TransactionReceipt>;
             call: (params: IAddStakesTrollParams, options?: TransactionOptions) => Promise<void>;
@@ -2684,6 +2970,10 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
         addTroll: {
             (params: IAddTrollParams, options?: TransactionOptions): Promise<TransactionReceipt>;
             call: (params: IAddTrollParams, options?: TransactionOptions) => Promise<void>;
+        };
+        addTrollType: {
+            (name: string, options?: TransactionOptions): Promise<TransactionReceipt>;
+            call: (name: string, options?: TransactionOptions) => Promise<void>;
         };
         backerStaking: {
             (params: IBackerStakingParams, options?: TransactionOptions): Promise<{
@@ -2927,6 +3217,11 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
             trollType: BigNumber;
             _event: Event;
         }
+        interface AddTrollTypeEvent {
+            trollType: BigNumber;
+            name: string;
+            _event: Event;
+        }
         interface AuthorizeEvent {
             user: string;
             _event: Event;
@@ -2997,7 +3292,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainVotingExecutor.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainVotingExecutor.json.ts" {
-    const _default_13: {
+    const _default_14: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -3046,7 +3341,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainVot
         })[];
         bytecode: string;
     };
-    export default _default_13;
+    export default _default_14;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainVotingExecutor.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainVotingExecutor.ts" {
@@ -3085,7 +3380,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainVot
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_RouterVaultWrapper.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_RouterVaultWrapper.json.ts" {
-    const _default_14: {
+    const _default_15: {
         abi: ({
             inputs: any[];
             stateMutability: string;
@@ -3140,7 +3435,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_RouterVaultW
         })[];
         bytecode: string;
     };
-    export default _default_14;
+    export default _default_15;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_RouterVaultWrapper.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_RouterVaultWrapper.ts" {
@@ -3256,7 +3551,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_RouterVaultW
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainProjectRegistry.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainProjectRegistry.json.ts" {
-    const _default_15: {
+    const _default_16: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -3318,18 +3613,13 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
         })[];
         bytecode: string;
     };
-    export default _default_15;
+    export default _default_16;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainProjectRegistry.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainProjectRegistry.ts" {
     import { IWallet, Contract as _Contract, TransactionReceipt, BigNumber, Event, TransactionOptions } from "@ijstech/eth-contract";
     export interface IAddTrollParams {
         signatures: string[];
-        trollProfileIndex: number | BigNumber;
-        troll: string;
-        nonce: number | BigNumber;
-    }
-    export interface IHashAddTrollParams {
         trollProfileIndex: number | BigNumber;
         troll: string;
         nonce: number | BigNumber;
@@ -3346,6 +3636,11 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
         projectTrolls: (number | BigNumber)[];
         nonce: number | BigNumber;
     }
+    export interface IHashTrollParams {
+        trollProfileIndex: number | BigNumber;
+        troll: string;
+        nonce: number | BigNumber;
+    }
     export interface IHashUpdateProjectParams {
         projectId: number | BigNumber;
         newOwner: string;
@@ -3360,12 +3655,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
         trollsToAdd: (number | BigNumber)[];
         nonce: number | BigNumber;
     }
-    export interface IHashUpdateTrollParams {
-        trollProfileIndex: number | BigNumber;
-        newTroll: string;
-        nonce: number | BigNumber;
-    }
-    export interface IHashUpdateTrollFromTrollParams {
+    export interface IHashUpdateTrollFromOwnerParams {
         trollProfileIndex: number | BigNumber;
         newTroll: string;
         nonce: number | BigNumber;
@@ -3408,10 +3698,10 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
     }
     export interface IUpdateTrollParams {
         signatures: string[];
-        trollSignature: string;
+        ownerSignature: string;
         trollProfileIndex: number | BigNumber;
         newTroll: string;
-        nonceForTrollSignature: number | BigNumber;
+        nonceForOwnerSignature: number | BigNumber;
         nonce: number | BigNumber;
     }
     export interface IUsedProjectNonceParams {
@@ -3467,14 +3757,14 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
                 projectTrolls: BigNumber[];
             }[]>;
         };
-        hashAddTroll: {
-            (params: IHashAddTrollParams, options?: TransactionOptions): Promise<string>;
-        };
         hashNewVault: {
             (params: IHashNewVaultParams, options?: TransactionOptions): Promise<string>;
         };
         hashNewVaultFormOwner: {
             (params: IHashNewVaultFormOwnerParams, options?: TransactionOptions): Promise<string>;
+        };
+        hashTroll: {
+            (params: IHashTrollParams, options?: TransactionOptions): Promise<string>;
         };
         hashUpdateProject: {
             (params: IHashUpdateProjectParams, options?: TransactionOptions): Promise<string>;
@@ -3482,11 +3772,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
         hashUpdateProjectFromOwner: {
             (params: IHashUpdateProjectFromOwnerParams, options?: TransactionOptions): Promise<string>;
         };
-        hashUpdateTroll: {
-            (params: IHashUpdateTrollParams, options?: TransactionOptions): Promise<string>;
-        };
-        hashUpdateTrollFromTroll: {
-            (params: IHashUpdateTrollFromTrollParams, options?: TransactionOptions): Promise<string>;
+        hashUpdateTrollFromOwner: {
+            (params: IHashUpdateTrollFromOwnerParams, options?: TransactionOptions): Promise<string>;
         };
         initAddress: {
             (params: IInitAddressParams, options?: TransactionOptions): Promise<TransactionReceipt>;
@@ -3533,7 +3820,10 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
             (param1: string, options?: TransactionOptions): Promise<BigNumber>;
         };
         trollProfiles: {
-            (param1: number | BigNumber, options?: TransactionOptions): Promise<string>;
+            (param1: number | BigNumber, options?: TransactionOptions): Promise<{
+                owner: string;
+                troll: string;
+            }>;
         };
         trollRegistry: {
             (options?: TransactionOptions): Promise<string>;
@@ -3604,7 +3894,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainTrollRegistry.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainTrollRegistry.json.ts" {
-    const _default_16: {
+    const _default_17: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -3646,7 +3936,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainTro
         })[];
         bytecode: string;
     };
-    export default _default_16;
+    export default _default_17;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainTrollRegistry.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainTrollRegistry.ts" {
@@ -4060,7 +4350,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainTro
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainVotingExecutor.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainVotingExecutor.json.ts" {
-    const _default_17: {
+    const _default_18: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -4102,7 +4392,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainVot
         })[];
         bytecode: string;
     };
-    export default _default_17;
+    export default _default_18;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainVotingExecutor.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainVotingExecutor.ts" {
@@ -4149,7 +4439,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainVot
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingContract.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingContract.json.ts" {
-    const _default_18: {
+    const _default_19: {
         abi: ({
             inputs: {
                 components: {
@@ -4182,7 +4472,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingContra
         })[];
         bytecode: string;
     };
-    export default _default_18;
+    export default _default_19;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingContract.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingContract.ts" {
@@ -4309,7 +4599,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingContra
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingManager.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingManager.json.ts" {
-    const _default_19: {
+    const _default_20: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -4351,7 +4641,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingManage
         })[];
         bytecode: string;
     };
-    export default _default_19;
+    export default _default_20;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingManager.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingManager.ts" {
@@ -4681,7 +4971,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingManage
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingRegistry.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingRegistry.json.ts" {
-    const _default_20: {
+    const _default_21: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -4715,7 +5005,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingRegist
         })[];
         bytecode: string;
     };
-    export default _default_20;
+    export default _default_21;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingRegistry.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingRegistry.ts" {
@@ -4749,7 +5039,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_VotingRegist
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault.json.ts" {
-    const _default_21: {
+    const _default_22: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -4832,7 +5122,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault.
         })[];
         bytecode: string;
     };
-    export default _default_21;
+    export default _default_22;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault.ts" {
@@ -4957,12 +5247,12 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault.
         };
     }
     export interface ITransferParams {
-        to: string;
+        recipient: string;
         amount: number | BigNumber;
     }
     export interface ITransferFromParams {
-        from: string;
-        to: string;
+        sender: string;
+        recipient: string;
         amount: number | BigNumber;
     }
     export interface IVoidOrderParams {
@@ -5381,7 +5671,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault.
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2.json.ts" {
-    const _default_22: {
+    const _default_23: {
         abi: ({
             inputs: any[];
             stateMutability: string;
@@ -5460,7 +5750,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2
         })[];
         bytecode: string;
     };
-    export default _default_22;
+    export default _default_23;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2.ts" {
@@ -5580,12 +5870,12 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2
         };
     }
     export interface ITransferParams {
-        to: string;
+        recipient: string;
         amount: number | BigNumber;
     }
     export interface ITransferFromParams {
-        from: string;
-        to: string;
+        sender: string;
+        recipient: string;
         amount: number | BigNumber;
     }
     export interface IVoidOrderParams {
@@ -6032,7 +6322,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2Creator.json.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2Creator.json.ts" {
-    const _default_23: {
+    const _default_24: {
         abi: ({
             inputs: {
                 internalType: string;
@@ -6060,7 +6350,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2
         })[];
         bytecode: string;
     };
-    export default _default_23;
+    export default _default_24;
 }
 /// <amd-module name="@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2Creator.ts" />
 declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVault2Creator.ts" {
@@ -6090,6 +6380,7 @@ declare module "@scom/oswap-project-bridge-contract/contracts/index.ts" {
     export { Authorization } from "@scom/oswap-project-bridge-contract/contracts/Authorization.ts";
     export { MOCK_TrollRegistry } from "@scom/oswap-project-bridge-contract/contracts/MOCK_TrollRegistry.ts";
     export { MintableToken } from "@scom/oswap-project-bridge-contract/contracts/MintableToken.ts";
+    export { MockErc20 } from "@scom/oswap-project-bridge-contract/contracts/MockErc20.ts";
     export { OSWAP_BridgeVaultTrollRegistry } from "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry.ts";
     export { OSWAP_BridgeVaultTrollRegistry2 } from "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2.ts";
     export { OSWAP_BridgeVaultTrollRegistry2Creator } from "@scom/oswap-project-bridge-contract/contracts/OSWAP_BridgeVaultTrollRegistry2Creator.ts";

@@ -28,6 +28,7 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
 
     bool private _paused;
     OSWAP_MainChainTrollRegistry public trollRegistry;
+    uint256 public trollType;
     Project[] public projects;
     mapping(uint256 => mapping(uint256 => uint256)) public projectTrollsInv; // projectTrollsInv[projectId][projectTroll] = projects.projectTrolls.idx
 
@@ -40,8 +41,9 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
     event AddTrolls(uint256 indexed projectId, uint256[] trollProfileIndex, uint256 nonce, bytes signature);
     event RemoveTrolls(uint256 indexed projectId, uint256[] trollProfileIndex, uint256 nonce, bytes signature);
 
-    constructor(OSWAP_MainChainTrollRegistry _trollRegistry) {
+    constructor(OSWAP_MainChainTrollRegistry _trollRegistry, uint256 _trollType) {
         trollRegistry = _trollRegistry;
+        trollType = _trollType;
     }
     function paused() public view returns (bool) {
         return _paused;
@@ -128,8 +130,8 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
         i = 0;
         length = projectTrolls.length;
         while ( i < length ) {
-            (/*address owner*/, /*address troll*/, OSWAP_MainChainTrollRegistry.TrollType trollType, /*uint256 nftCount*/) = trollRegistry.trollProfiles(projectTrolls[i]);
-            require(trollType == OSWAP_MainChainTrollRegistry.TrollType.ProjectTroll, "not a project troll");
+            (/*address owner*/, /*address troll*/, uint256 _trollType, /*uint256 nftCount*/) = trollRegistry.trollProfiles(projectTrolls[i]);
+            require(_trollType == trollType, "not a project troll");
             require(projectTrollsInv[projectId][projectTrolls[i]] == 0, "troll already exists");
             projectTrollsInv[projectId][projectTrolls[i]] = i;
             unchecked { i++; }

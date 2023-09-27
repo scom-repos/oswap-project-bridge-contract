@@ -1,5 +1,6 @@
 import {IWallet, Contract as _Contract, Transaction, TransactionReceipt, BigNumber, Event, IBatchRequestObj, TransactionOptions} from "@ijstech/eth-contract";
 import Bin from "./OSWAP_MainChainProjectRegistry.json";
+export interface IDeployParams {trollRegistry:string;trollType:number|BigNumber}
 export interface IAddProjectTokenParams {projectId:number|BigNumber;tokens:{chainId:number|BigNumber,token:string}[];nonce:number|BigNumber;signatures:string[]}
 export interface IAddTrollsParams {projectId:number|BigNumber;trollProfileIndex:(number|BigNumber)[];nonce:number|BigNumber;signature:string}
 export interface IGetProjectsParams {start:number|BigNumber;length:number|BigNumber}
@@ -14,8 +15,8 @@ export class OSWAP_MainChainProjectRegistry extends _Contract{
         super(wallet, address, Bin.abi, Bin.bytecode);
         this.assign()
     }
-    deploy(trollRegistry:string, options?: TransactionOptions): Promise<string>{
-        return this.__deploy([trollRegistry], options);
+    deploy(params: IDeployParams, options?: TransactionOptions): Promise<string>{
+        return this.__deploy([params.trollRegistry,this.wallet.utils.toString(params.trollType)], options);
     }
     parseAddTrollsEvent(receipt: TransactionReceipt): OSWAP_MainChainProjectRegistry.AddTrollsEvent[]{
         return this.parseEvents(receipt, "AddTrolls").map(e=>this.decodeAddTrollsEvent(e));
@@ -233,6 +234,9 @@ export class OSWAP_MainChainProjectRegistry extends _Contract{
     trollRegistry: {
         (options?: TransactionOptions): Promise<string>;
     }
+    trollType: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    }
     private assign(){
         let getProject_call = async (projectId:number|BigNumber, options?: TransactionOptions): Promise<{owner:string,newOwner:string,projectTrolls:BigNumber[],chainIds:BigNumber[],tokens:string[]}> => {
             let result = await this.call('getProject',[this.wallet.utils.toString(projectId)],options);
@@ -308,6 +312,11 @@ export class OSWAP_MainChainProjectRegistry extends _Contract{
             return result;
         }
         this.trollRegistry = trollRegistry_call
+        let trollType_call = async (options?: TransactionOptions): Promise<BigNumber> => {
+            let result = await this.call('trollType',[],options);
+            return new BigNumber(result);
+        }
+        this.trollType = trollType_call
         let addProjectTokenParams = (params: IAddProjectTokenParams) => [this.wallet.utils.toString(params.projectId),params.tokens.map(e=>([this.wallet.utils.toString(e.chainId),e.token])),this.wallet.utils.toString(params.nonce),this.wallet.utils.stringToBytes(params.signatures)];
         let addProjectToken_send = async (params: IAddProjectTokenParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('addProjectToken',addProjectTokenParams(params),options);

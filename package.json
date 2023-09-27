@@ -28,6 +28,6 @@
     "ts-node": "10.5.0",
     "typescript": "5.0.4",
     "mocha": "9.2.0",
-    "@openzeppelin/contracts": "4.9.3"
+    "@openzeppelin/contracts": "4.3.2"
   }
 }

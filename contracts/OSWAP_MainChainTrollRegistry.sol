@@ -29,10 +29,11 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
 
     event Shutdown(address indexed account);
     event Resume();
-    event AddTroll(address indexed owner, address indexed troll, uint256 indexed trollProfileIndex, TrollType trollType);
+    event AddTroll(address indexed owner, address indexed troll, uint256 indexed trollProfileIndex, uint256 trollType);
     event UpdateTroll(uint256 indexed trollProfileIndex, address indexed oldTroll, address indexed newTroll);
 
-    event UpdateNFT(I_TrollNFT indexed nft, TrollType trollType);
+    event AddTrollType(uint256 indexed trollType, bytes name);
+    event UpdateNFT(I_TrollNFT indexed nft, uint256 trollType);
     event BlockNftTokenId(I_TrollNFT indexed nft, uint256 indexed tokenId, bool blocked);
     event UpdateVotingManager(OSWAP_VotingManager newVotingManager);
     event Upgrade(address newTrollRegistry);
@@ -40,13 +41,16 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
     event StakeTroll(address indexed backer, uint256 indexed trollProfileIndex, I_TrollNFT nft, uint256 tokenId, uint256 stakesChange, uint256 stakesBalance);
     event UnstakeTroll(address indexed backer, uint256 indexed trollProfileIndex, I_TrollNFT nft, uint256 tokenId, uint256 stakesChange, uint256 stakesBalance);
 
-    enum TrollType {NotSpecified, SuperTroll, GeneralTroll, BlockedSuperTroll, BlockedGeneralTroll, ProjectTroll, BlockedProjectTroll}
     // trolls in Locked state can still participate in voting (to replicate events in main chain) in side chain, but cannot do cross chain transactions
+    uint256 public constant SuperTroll = 1;
+    uint256 public constant GeneralTroll = 2;
+    uint256 public constant BlockedSuperTroll = 3;
+    uint256 public constant BlockedGeneralTroll = 4;
 
     struct TrollProfile {
         address owner;
         address troll;
-        TrollType trollType;
+        uint256 trollType;
         uint256 nftCount;
     }
     struct StakeTo {
@@ -80,9 +84,10 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
     mapping(uint256 => Nft[]) public stakedBy;  // stakedBy[trollProfileIndex][idx2] = {nft, tokenId}
     mapping(I_TrollNFT => mapping(uint256 => StakedInv)) public stakedByInv;   // stakedByInv[nft][tokenId] = {trollProfileIndex, idx2}
 
+    uint256 trollTypeCount;
     I_TrollNFT[] public trollNft;
     mapping(I_TrollNFT => uint256) public trollNftInv;
-    mapping(I_TrollNFT => TrollType) public nftType;
+    mapping(I_TrollNFT => uint256) public nftType;
 
     uint256 public totalStake;
     mapping(address => uint256) public stakeOf; // stakeOf[owner]
@@ -97,8 +102,8 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
             I_TrollNFT nft = _superTrollNft[i];
             trollNftInv[nft] = i;
             trollNft.push(nft);
-            nftType[nft] = TrollType.SuperTroll;
-            emit UpdateNFT(nft, TrollType.SuperTroll);
+            nftType[nft] = SuperTroll;
+            emit UpdateNFT(nft, SuperTroll);
         }
 
         uint256 length2 = _generalTrollNft.length;
@@ -106,12 +111,14 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
             I_TrollNFT nft = _generalTrollNft[i];
             trollNftInv[nft] = i + length;
             trollNft.push(nft);
-            nftType[nft] = TrollType.GeneralTroll;
-            emit UpdateNFT(nft, TrollType.GeneralTroll);
+            nftType[nft] = GeneralTroll;
+            emit UpdateNFT(nft, GeneralTroll);
         }
 
+        trollTypeCount = 4;
+
         // make trollProfiles[0] invalid and trollProfiles.length > 0
-        trollProfiles.push(TrollProfile({owner:address(0), troll:address(0), trollType:TrollType.NotSpecified, nftCount:0}));
+        trollProfiles.push(TrollProfile({owner:address(0), troll:address(0), trollType:0, nftCount:0}));
         isPermitted[msg.sender] = true;
     }
     function initAddress(OSWAP_VotingManager _votingManager) external onlyOwner {
@@ -230,23 +237,27 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
 
 
     // admins' functions
-    function updateNft(I_TrollNFT nft, TrollType trolltype) external onlyOwner {
+    function addTrollType(bytes calldata name) external onlyOwner {
+        emit AddTrollType(trollTypeCount + 1, name);
+        trollTypeCount += 2;
+    }
+    function updateNft(I_TrollNFT nft, uint256 trollType) external onlyOwner {
         // new nft or block the nft if exists
-        TrollType oldType = nftType[nft];
+        uint256 oldType = nftType[nft];
         bool isNew = trollNft.length == 0 || trollNft[trollNftInv[nft]] != nft;
         if (isNew) {
-            require(trolltype == TrollType.SuperTroll || trolltype == TrollType.GeneralTroll || trolltype == TrollType.ProjectTroll);
+            require(trollType == SuperTroll || trollType == GeneralTroll || (trollType>4 && trollType<=trollTypeCount && trollType % 2 == 1));
             trollNftInv[nft] = trollNft.length;
             trollNft.push(nft);
         } else {
             require(
-                oldType == TrollType.SuperTroll ? trolltype == TrollType.BlockedSuperTroll : 
-                oldType == TrollType.GeneralTroll ? trolltype == TrollType.BlockedGeneralTroll :
-                trolltype == TrollType.BlockedProjectTroll
+                oldType == SuperTroll ? trollType == BlockedSuperTroll : 
+                oldType == GeneralTroll ? trollType == BlockedGeneralTroll :
+                (trollType == oldType + 1)
             );
         }
-        nftType[nft] = trolltype;
-        emit UpdateNFT(nft, trolltype);
+        nftType[nft] = trollType;
+        emit UpdateNFT(nft, trollType);
     }
 
     /*
@@ -261,7 +272,7 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
         uint256 length = stakes.length;
         for (uint256 i = 0 ; i < length ; i++) {
             Nft storage staking = stakes[i];
-            if (nftType[staking.nft] == TrollType.SuperTroll) {
+            if (nftType[staking.nft] == SuperTroll) {
                 totalStakes += staking.nft.stakingBalance(staking.tokenId);
             }
         }
@@ -270,7 +281,7 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
     /*
      * functions called by owner
      */
-    function addTroll(address troll, TrollType trollType, bytes calldata signature) external whenNotPaused {
+    function addTroll(address troll, uint256 trollType, bytes calldata signature) external whenNotPaused {
         // check if owner has the troll's private key to sign message
         address trollOwner = msg.sender;
 
@@ -278,7 +289,7 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
         require(trollProfileInv[troll] == 0, "troll already exists");
         require(trollOwner != troll && trollProfileInv[trollOwner] == 0, "owner cannot be a troll");
         require(!isPermitted[troll], "permitted address cannot be a troll");
-        require(trollType==TrollType.SuperTroll || trollType==TrollType.GeneralTroll || trollType==TrollType.ProjectTroll, "Invalid type");
+        require(trollType==SuperTroll || trollType==GeneralTroll || (trollType>4 && trollType<=trollTypeCount && trollType%2==1), "Invalid type");
         require(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(msg.sender)))).recover(signature) == troll, "invalid troll signature");
 
         uint256 trollProfileIndex = trollProfiles.length;

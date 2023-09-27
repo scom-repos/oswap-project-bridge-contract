@@ -64,7 +64,7 @@ export interface IUnstakeTrollParams {
 }
 export interface IUpdateNftParams {
     nft: string;
-    trolltype: number | BigNumber;
+    trollType: number | BigNumber;
 }
 export interface IUpdateTrollParams {
     trollProfileIndex: number | BigNumber;
@@ -77,6 +77,8 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
     deploy(params: IDeployParams, options?: TransactionOptions): Promise<string>;
     parseAddTrollEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.AddTrollEvent[];
     decodeAddTrollEvent(event: Event): OSWAP_MainChainTrollRegistry.AddTrollEvent;
+    parseAddTrollTypeEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.AddTrollTypeEvent[];
+    decodeAddTrollTypeEvent(event: Event): OSWAP_MainChainTrollRegistry.AddTrollTypeEvent;
     parseAuthorizeEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.AuthorizeEvent[];
     decodeAuthorizeEvent(event: Event): OSWAP_MainChainTrollRegistry.AuthorizeEvent;
     parseBlockNftTokenIdEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.BlockNftTokenIdEvent[];
@@ -103,6 +105,18 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
     decodeUpdateVotingManagerEvent(event: Event): OSWAP_MainChainTrollRegistry.UpdateVotingManagerEvent;
     parseUpgradeEvent(receipt: TransactionReceipt): OSWAP_MainChainTrollRegistry.UpgradeEvent[];
     decodeUpgradeEvent(event: Event): OSWAP_MainChainTrollRegistry.UpgradeEvent;
+    BlockedGeneralTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    };
+    BlockedSuperTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    };
+    GeneralTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    };
+    SuperTroll: {
+        (options?: TransactionOptions): Promise<BigNumber>;
+    };
     addStakesTroll: {
         (params: IAddStakesTrollParams, options?: TransactionOptions): Promise<TransactionReceipt>;
         call: (params: IAddStakesTrollParams, options?: TransactionOptions) => Promise<void>;
@@ -110,6 +124,10 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
     addTroll: {
         (params: IAddTrollParams, options?: TransactionOptions): Promise<TransactionReceipt>;
         call: (params: IAddTrollParams, options?: TransactionOptions) => Promise<void>;
+    };
+    addTrollType: {
+        (name: string, options?: TransactionOptions): Promise<TransactionReceipt>;
+        call: (name: string, options?: TransactionOptions) => Promise<void>;
     };
     backerStaking: {
         (params: IBackerStakingParams, options?: TransactionOptions): Promise<{
@@ -351,6 +369,11 @@ export declare module OSWAP_MainChainTrollRegistry {
         troll: string;
         trollProfileIndex: BigNumber;
         trollType: BigNumber;
+        _event: Event;
+    }
+    interface AddTrollTypeEvent {
+        trollType: BigNumber;
+        name: string;
         _event: Event;
     }
     interface AuthorizeEvent {

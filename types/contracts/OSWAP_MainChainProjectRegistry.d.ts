@@ -1,4 +1,8 @@
 import { IWallet, Contract as _Contract, TransactionReceipt, BigNumber, Event, TransactionOptions } from "@ijstech/eth-contract";
+export interface IDeployParams {
+    trollRegistry: string;
+    trollType: number | BigNumber;
+}
 export interface IAddProjectTokenParams {
     projectId: number | BigNumber;
     tokens: {
@@ -49,7 +53,7 @@ export interface ITransferProjectOwnershipParams {
 export declare class OSWAP_MainChainProjectRegistry extends _Contract {
     static _abi: any;
     constructor(wallet: IWallet, address?: string);
-    deploy(trollRegistry: string, options?: TransactionOptions): Promise<string>;
+    deploy(params: IDeployParams, options?: TransactionOptions): Promise<string>;
     parseAddTrollsEvent(receipt: TransactionReceipt): OSWAP_MainChainProjectRegistry.AddTrollsEvent[];
     decodeAddTrollsEvent(event: Event): OSWAP_MainChainProjectRegistry.AddTrollsEvent;
     parseAuthorizeEvent(receipt: TransactionReceipt): OSWAP_MainChainProjectRegistry.AuthorizeEvent[];
@@ -171,6 +175,9 @@ export declare class OSWAP_MainChainProjectRegistry extends _Contract {
     };
     trollRegistry: {
         (options?: TransactionOptions): Promise<string>;
+    };
+    trollType: {
+        (options?: TransactionOptions): Promise<BigNumber>;
     };
     private assign;
 }
