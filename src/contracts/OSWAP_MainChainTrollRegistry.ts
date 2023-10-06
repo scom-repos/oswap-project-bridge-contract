@@ -2,7 +2,7 @@ import {IWallet, Contract as _Contract, Transaction, TransactionReceipt, BigNumb
 import Bin from "./OSWAP_MainChainTrollRegistry.json";
 export interface IDeployParams {govToken:string;superTrollNft:string[];generalTrollNft:string[]}
 export interface IAddStakesTrollParams {nft:string;tokenId:number|BigNumber;amount:number|BigNumber}
-export interface IAddTrollParams {troll:string;trollType:number|BigNumber;signature:string}
+export interface IAddTrollParams {troll:string;trollType:number|BigNumber;ownerNonce:number|BigNumber;ownerSignature:string;trollSignature:string}
 export interface IBackerStakingParams {backer:string;start:number|BigNumber;length:number|BigNumber}
 export interface IGetTrollByNftParams {nft:string;tokenId:number|BigNumber}
 export interface IGetTrollsParams {start:number|BigNumber;length:number|BigNumber}
@@ -15,7 +15,7 @@ export interface IStakedByParams {param1:number|BigNumber;param2:number|BigNumbe
 export interface IStakedByInvParams {param1:string;param2:number|BigNumber}
 export interface IUnstakeTrollParams {nft:string;tokenId:number|BigNumber}
 export interface IUpdateNftParams {nft:string;trollType:number|BigNumber}
-export interface IUpdateTrollParams {trollProfileIndex:number|BigNumber;newTroll:string;signature:string}
+export interface IUpdateTrollParams {trollProfileIndex:number|BigNumber;newTroll:string;ownerNonce:number|BigNumber;ownerSignature:string;trollSignature:string}
 export class OSWAP_MainChainTrollRegistry extends _Contract{
     static _abi: any = Bin.abi;
     constructor(wallet: IWallet, address?: string){
@@ -35,6 +35,8 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
             troll: result.troll,
             trollProfileIndex: new BigNumber(result.trollProfileIndex),
             trollType: new BigNumber(result.trollType),
+            nonce: new BigNumber(result.nonce),
+            signature: result.signature,
             _event: event
         };
     }
@@ -170,6 +172,8 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
             trollProfileIndex: new BigNumber(result.trollProfileIndex),
             oldTroll: result.oldTroll,
             newTroll: result.newTroll,
+            nonce: new BigNumber(result.nonce),
+            signature: result.signature,
             _event: event
         };
     }
@@ -240,16 +244,16 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         (params: IGetTrollByNftParams, options?: TransactionOptions): Promise<string>;
     }
     getTrollProfileByAddress: {
-        (trollAddress:string, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber}>;
+        (trollAddress:string, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber}>;
     }
     getTrollProperties: {
-        (trollProfileIndex:number|BigNumber, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}>;
+        (trollProfileIndex:number|BigNumber, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}>;
     }
     getTrollPropertiesByAddress: {
-        (trollAddress:string, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}>;
+        (trollAddress:string, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}>;
     }
     getTrolls: {
-        (params: IGetTrollsParams, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber}[]>;
+        (params: IGetTrollsParams, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber}[]>;
     }
     govToken: {
         (options?: TransactionOptions): Promise<string>;
@@ -351,7 +355,7 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         (param1:string, options?: TransactionOptions): Promise<BigNumber>;
     }
     trollProfiles: {
-        (param1:number|BigNumber, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber}>;
+        (param1:number|BigNumber, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber}>;
     }
     trollProfilesLength: {
         (options?: TransactionOptions): Promise<BigNumber>;
@@ -455,19 +459,21 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
             return result;
         }
         this.getTrollByNft = getTrollByNft_call
-        let getTrollProfileByAddress_call = async (trollAddress:string, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber}> => {
+        let getTrollProfileByAddress_call = async (trollAddress:string, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber}> => {
             let result = await this.call('getTrollProfileByAddress',[trollAddress],options);
             return (
             {
                 owner: result.owner,
                 troll: result.troll,
                 trollType: new BigNumber(result.trollType),
+                nonce: new BigNumber(result.nonce),
+                signature: result.signature,
                 nftCount: new BigNumber(result.nftCount)
             }
             );
         }
         this.getTrollProfileByAddress = getTrollProfileByAddress_call
-        let getTrollProperties_call = async (trollProfileIndex:number|BigNumber, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}> => {
+        let getTrollProperties_call = async (trollProfileIndex:number|BigNumber, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}> => {
             let result = await this.call('getTrollProperties',[this.wallet.utils.toString(trollProfileIndex)],options);
             return {
                 troll: 
@@ -475,6 +481,8 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
                     owner: result.troll.owner,
                     troll: result.troll.troll,
                     trollType: new BigNumber(result.troll.trollType),
+                    nonce: new BigNumber(result.troll.nonce),
+                    signature: result.troll.signature,
                     nftCount: new BigNumber(result.troll.nftCount)
                 }
                 ,
@@ -488,7 +496,7 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
             };
         }
         this.getTrollProperties = getTrollProperties_call
-        let getTrollPropertiesByAddress_call = async (trollAddress:string, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}> => {
+        let getTrollPropertiesByAddress_call = async (trollAddress:string, options?: TransactionOptions): Promise<{troll:{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber},nfts:{nft:string,tokenId:BigNumber}[],backers:string[]}> => {
             let result = await this.call('getTrollPropertiesByAddress',[trollAddress],options);
             return {
                 troll: 
@@ -496,6 +504,8 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
                     owner: result.troll.owner,
                     troll: result.troll.troll,
                     trollType: new BigNumber(result.troll.trollType),
+                    nonce: new BigNumber(result.troll.nonce),
+                    signature: result.troll.signature,
                     nftCount: new BigNumber(result.troll.nftCount)
                 }
                 ,
@@ -510,13 +520,15 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         }
         this.getTrollPropertiesByAddress = getTrollPropertiesByAddress_call
         let getTrollsParams = (params: IGetTrollsParams) => [this.wallet.utils.toString(params.start),this.wallet.utils.toString(params.length)];
-        let getTrolls_call = async (params: IGetTrollsParams, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber}[]> => {
+        let getTrolls_call = async (params: IGetTrollsParams, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber}[]> => {
             let result = await this.call('getTrolls',getTrollsParams(params),options);
             return (result.map(e=>(
                 {
                     owner: e.owner,
                     troll: e.troll,
                     trollType: new BigNumber(e.trollType),
+                    nonce: new BigNumber(e.nonce),
+                    signature: e.signature,
                     nftCount: new BigNumber(e.nftCount)
                 }
             )));
@@ -646,12 +658,14 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
             return new BigNumber(result);
         }
         this.trollProfileInv = trollProfileInv_call
-        let trollProfiles_call = async (param1:number|BigNumber, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nftCount:BigNumber}> => {
+        let trollProfiles_call = async (param1:number|BigNumber, options?: TransactionOptions): Promise<{owner:string,troll:string,trollType:BigNumber,nonce:BigNumber,signature:string,nftCount:BigNumber}> => {
             let result = await this.call('trollProfiles',[this.wallet.utils.toString(param1)],options);
             return {
                 owner: result.owner,
                 troll: result.troll,
                 trollType: new BigNumber(result.trollType),
+                nonce: new BigNumber(result.nonce),
+                signature: result.signature,
                 nftCount: new BigNumber(result.nftCount)
             };
         }
@@ -678,7 +692,7 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         this.addStakesTroll = Object.assign(addStakesTroll_send, {
             call:addStakesTroll_call
         });
-        let addTrollParams = (params: IAddTrollParams) => [params.troll,this.wallet.utils.toString(params.trollType),this.wallet.utils.stringToBytes(params.signature)];
+        let addTrollParams = (params: IAddTrollParams) => [params.troll,this.wallet.utils.toString(params.trollType),this.wallet.utils.toString(params.ownerNonce),this.wallet.utils.stringToBytes(params.ownerSignature),this.wallet.utils.stringToBytes(params.trollSignature)];
         let addTroll_send = async (params: IAddTrollParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('addTroll',addTrollParams(params),options);
             return result;
@@ -837,7 +851,7 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
         this.updateNft = Object.assign(updateNft_send, {
             call:updateNft_call
         });
-        let updateTrollParams = (params: IUpdateTrollParams) => [this.wallet.utils.toString(params.trollProfileIndex),params.newTroll,this.wallet.utils.stringToBytes(params.signature)];
+        let updateTrollParams = (params: IUpdateTrollParams) => [this.wallet.utils.toString(params.trollProfileIndex),params.newTroll,this.wallet.utils.toString(params.ownerNonce),this.wallet.utils.stringToBytes(params.ownerSignature),this.wallet.utils.stringToBytes(params.trollSignature)];
         let updateTroll_send = async (params: IUpdateTrollParams, options?: TransactionOptions): Promise<TransactionReceipt> => {
             let result = await this.send('updateTroll',updateTrollParams(params),options);
             return result;
@@ -885,7 +899,7 @@ export class OSWAP_MainChainTrollRegistry extends _Contract{
     }
 }
 export module OSWAP_MainChainTrollRegistry{
-    export interface AddTrollEvent {owner:string,troll:string,trollProfileIndex:BigNumber,trollType:BigNumber,_event:Event}
+    export interface AddTrollEvent {owner:string,troll:string,trollProfileIndex:BigNumber,trollType:BigNumber,nonce:BigNumber,signature:string,_event:Event}
     export interface AddTrollTypeEvent {trollType:BigNumber,name:string,_event:Event}
     export interface AuthorizeEvent {user:string,_event:Event}
     export interface BlockNftTokenIdEvent {nft:string,tokenId:BigNumber,blocked:boolean,_event:Event}
@@ -897,7 +911,7 @@ export module OSWAP_MainChainTrollRegistry{
     export interface TransferOwnershipEvent {user:string,_event:Event}
     export interface UnstakeTrollEvent {backer:string,trollProfileIndex:BigNumber,nft:string,tokenId:BigNumber,stakesChange:BigNumber,stakesBalance:BigNumber,_event:Event}
     export interface UpdateNFTEvent {nft:string,trollType:BigNumber,_event:Event}
-    export interface UpdateTrollEvent {trollProfileIndex:BigNumber,oldTroll:string,newTroll:string,_event:Event}
+    export interface UpdateTrollEvent {trollProfileIndex:BigNumber,oldTroll:string,newTroll:string,nonce:BigNumber,signature:string,_event:Event}
     export interface UpdateVotingManagerEvent {newVotingManager:string,_event:Event}
     export interface UpgradeEvent {newTrollRegistry:string,_event:Event}
 }

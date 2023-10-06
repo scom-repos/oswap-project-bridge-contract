@@ -12,7 +12,9 @@ export interface IAddStakesTrollParams {
 export interface IAddTrollParams {
     troll: string;
     trollType: number | BigNumber;
-    signature: string;
+    ownerNonce: number | BigNumber;
+    ownerSignature: string;
+    trollSignature: string;
 }
 export interface IBackerStakingParams {
     backer: string;
@@ -69,7 +71,9 @@ export interface IUpdateNftParams {
 export interface IUpdateTrollParams {
     trollProfileIndex: number | BigNumber;
     newTroll: string;
-    signature: string;
+    ownerNonce: number | BigNumber;
+    ownerSignature: string;
+    trollSignature: string;
 }
 export declare class OSWAP_MainChainTrollRegistry extends _Contract {
     static _abi: any;
@@ -169,6 +173,8 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
             owner: string;
             troll: string;
             trollType: BigNumber;
+            nonce: BigNumber;
+            signature: string;
             nftCount: BigNumber;
         }>;
     };
@@ -178,6 +184,8 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
                 owner: string;
                 troll: string;
                 trollType: BigNumber;
+                nonce: BigNumber;
+                signature: string;
                 nftCount: BigNumber;
             };
             nfts: {
@@ -193,6 +201,8 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
                 owner: string;
                 troll: string;
                 trollType: BigNumber;
+                nonce: BigNumber;
+                signature: string;
                 nftCount: BigNumber;
             };
             nfts: {
@@ -207,6 +217,8 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
             owner: string;
             troll: string;
             trollType: BigNumber;
+            nonce: BigNumber;
+            signature: string;
             nftCount: BigNumber;
         }[]>;
     };
@@ -328,6 +340,8 @@ export declare class OSWAP_MainChainTrollRegistry extends _Contract {
             owner: string;
             troll: string;
             trollType: BigNumber;
+            nonce: BigNumber;
+            signature: string;
             nftCount: BigNumber;
         }>;
     };
@@ -369,6 +383,8 @@ export declare module OSWAP_MainChainTrollRegistry {
         troll: string;
         trollProfileIndex: BigNumber;
         trollType: BigNumber;
+        nonce: BigNumber;
+        signature: string;
         _event: Event;
     }
     interface AddTrollTypeEvent {
@@ -432,6 +448,8 @@ export declare module OSWAP_MainChainTrollRegistry {
         trollProfileIndex: BigNumber;
         oldTroll: string;
         newTroll: string;
+        nonce: BigNumber;
+        signature: string;
         _event: Event;
     }
     interface UpdateVotingManagerEvent {

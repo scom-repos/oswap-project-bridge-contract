@@ -2858,7 +2858,9 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
     export interface IAddTrollParams {
         troll: string;
         trollType: number | BigNumber;
-        signature: string;
+        ownerNonce: number | BigNumber;
+        ownerSignature: string;
+        trollSignature: string;
     }
     export interface IBackerStakingParams {
         backer: string;
@@ -2915,7 +2917,9 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
     export interface IUpdateTrollParams {
         trollProfileIndex: number | BigNumber;
         newTroll: string;
-        signature: string;
+        ownerNonce: number | BigNumber;
+        ownerSignature: string;
+        trollSignature: string;
     }
     export class OSWAP_MainChainTrollRegistry extends _Contract {
         static _abi: any;
@@ -3015,6 +3019,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
                 owner: string;
                 troll: string;
                 trollType: BigNumber;
+                nonce: BigNumber;
+                signature: string;
                 nftCount: BigNumber;
             }>;
         };
@@ -3024,6 +3030,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
                     owner: string;
                     troll: string;
                     trollType: BigNumber;
+                    nonce: BigNumber;
+                    signature: string;
                     nftCount: BigNumber;
                 };
                 nfts: {
@@ -3039,6 +3047,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
                     owner: string;
                     troll: string;
                     trollType: BigNumber;
+                    nonce: BigNumber;
+                    signature: string;
                     nftCount: BigNumber;
                 };
                 nfts: {
@@ -3053,6 +3063,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
                 owner: string;
                 troll: string;
                 trollType: BigNumber;
+                nonce: BigNumber;
+                signature: string;
                 nftCount: BigNumber;
             }[]>;
         };
@@ -3174,6 +3186,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
                 owner: string;
                 troll: string;
                 trollType: BigNumber;
+                nonce: BigNumber;
+                signature: string;
                 nftCount: BigNumber;
             }>;
         };
@@ -3215,6 +3229,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
             troll: string;
             trollProfileIndex: BigNumber;
             trollType: BigNumber;
+            nonce: BigNumber;
+            signature: string;
             _event: Event;
         }
         interface AddTrollTypeEvent {
@@ -3278,6 +3294,8 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_MainChainTro
             trollProfileIndex: BigNumber;
             oldTroll: string;
             newTroll: string;
+            nonce: BigNumber;
+            signature: string;
             _event: Event;
         }
         interface UpdateVotingManagerEvent {
@@ -3620,8 +3638,15 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
     import { IWallet, Contract as _Contract, TransactionReceipt, BigNumber, Event, TransactionOptions } from "@ijstech/eth-contract";
     export interface IAddTrollParams {
         signatures: string[];
+        ownerSignature: string;
         trollProfileIndex: number | BigNumber;
+        owner: string;
         troll: string;
+        nonceForOwnerSignature: number | BigNumber;
+        nonce: number | BigNumber;
+    }
+    export interface IHashAddTrollFromOwnerParams {
+        newTroll: string;
         nonce: number | BigNumber;
     }
     export interface IHashNewVaultParams {
@@ -3704,6 +3729,10 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
         nonceForOwnerSignature: number | BigNumber;
         nonce: number | BigNumber;
     }
+    export interface IUsedOwnerNonceParams {
+        param1: string;
+        param2: number | BigNumber;
+    }
     export interface IUsedProjectNonceParams {
         param1: number | BigNumber;
         param2: number | BigNumber;
@@ -3756,6 +3785,9 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
                 bridgeVault: string;
                 projectTrolls: BigNumber[];
             }[]>;
+        };
+        hashAddTrollFromOwner: {
+            (params: IHashAddTrollFromOwnerParams, options?: TransactionOptions): Promise<string>;
         };
         hashNewVault: {
             (params: IHashNewVaultParams, options?: TransactionOptions): Promise<string>;
@@ -3838,6 +3870,9 @@ declare module "@scom/oswap-project-bridge-contract/contracts/OSWAP_SideChainPro
         };
         usedNonce: {
             (param1: number | BigNumber, options?: TransactionOptions): Promise<boolean>;
+        };
+        usedOwnerNonce: {
+            (params: IUsedOwnerNonceParams, options?: TransactionOptions): Promise<boolean>;
         };
         usedProjectNonce: {
             (params: IUsedProjectNonceParams, options?: TransactionOptions): Promise<boolean>;

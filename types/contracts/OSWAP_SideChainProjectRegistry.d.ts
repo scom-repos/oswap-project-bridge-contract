@@ -1,8 +1,15 @@
 import { IWallet, Contract as _Contract, TransactionReceipt, BigNumber, Event, TransactionOptions } from "@ijstech/eth-contract";
 export interface IAddTrollParams {
     signatures: string[];
+    ownerSignature: string;
     trollProfileIndex: number | BigNumber;
+    owner: string;
     troll: string;
+    nonceForOwnerSignature: number | BigNumber;
+    nonce: number | BigNumber;
+}
+export interface IHashAddTrollFromOwnerParams {
+    newTroll: string;
     nonce: number | BigNumber;
 }
 export interface IHashNewVaultParams {
@@ -85,6 +92,10 @@ export interface IUpdateTrollParams {
     nonceForOwnerSignature: number | BigNumber;
     nonce: number | BigNumber;
 }
+export interface IUsedOwnerNonceParams {
+    param1: string;
+    param2: number | BigNumber;
+}
 export interface IUsedProjectNonceParams {
     param1: number | BigNumber;
     param2: number | BigNumber;
@@ -137,6 +148,9 @@ export declare class OSWAP_SideChainProjectRegistry extends _Contract {
             bridgeVault: string;
             projectTrolls: BigNumber[];
         }[]>;
+    };
+    hashAddTrollFromOwner: {
+        (params: IHashAddTrollFromOwnerParams, options?: TransactionOptions): Promise<string>;
     };
     hashNewVault: {
         (params: IHashNewVaultParams, options?: TransactionOptions): Promise<string>;
@@ -219,6 +233,9 @@ export declare class OSWAP_SideChainProjectRegistry extends _Contract {
     };
     usedNonce: {
         (param1: number | BigNumber, options?: TransactionOptions): Promise<boolean>;
+    };
+    usedOwnerNonce: {
+        (params: IUsedOwnerNonceParams, options?: TransactionOptions): Promise<boolean>;
     };
     usedProjectNonce: {
         (params: IUsedProjectNonceParams, options?: TransactionOptions): Promise<boolean>;

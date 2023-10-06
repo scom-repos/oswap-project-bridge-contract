@@ -29,8 +29,9 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
 
     event Shutdown(address indexed account);
     event Resume();
-    event AddTroll(address indexed owner, address indexed troll, uint256 indexed trollProfileIndex, uint256 trollType);
-    event UpdateTroll(uint256 indexed trollProfileIndex, address indexed oldTroll, address indexed newTroll);
+
+    event AddTroll(address indexed owner, address indexed troll, uint256 indexed trollProfileIndex, uint256 trollType, uint256 nonce, bytes signature);
+    event UpdateTroll(uint256 indexed trollProfileIndex, address indexed oldTroll, address indexed newTroll, uint256 nonce, bytes signature);
 
     event AddTrollType(uint256 indexed trollType, bytes name);
     event UpdateNFT(I_TrollNFT indexed nft, uint256 trollType);
@@ -51,6 +52,8 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
         address owner;
         address troll;
         uint256 trollType;
+        uint256 nonce;
+        bytes signature;
         uint256 nftCount;
     }
     struct StakeTo {
@@ -118,7 +121,7 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
         trollTypeCount = 4;
 
         // make trollProfiles[0] invalid and trollProfiles.length > 0
-        trollProfiles.push(TrollProfile({owner:address(0), troll:address(0), trollType:0, nftCount:0}));
+        trollProfiles.push(TrollProfile({owner:address(0), troll:address(0), trollType:0, nonce:0, signature:new bytes(0), nftCount:0}));
         isPermitted[msg.sender] = true;
     }
     function initAddress(OSWAP_VotingManager _votingManager) external onlyOwner {
@@ -281,7 +284,7 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
     /*
      * functions called by owner
      */
-    function addTroll(address troll, uint256 trollType, bytes calldata signature) external whenNotPaused {
+    function addTroll(address troll, uint256 trollType, uint256 ownerNonce, bytes calldata ownerSignature, bytes calldata trollSignature) external whenNotPaused {
         // check if owner has the troll's private key to sign message
         address trollOwner = msg.sender;
 
@@ -290,28 +293,30 @@ contract OSWAP_MainChainTrollRegistry is Authorization, ERC721Holder, Reentrancy
         require(trollOwner != troll && trollProfileInv[trollOwner] == 0, "owner cannot be a troll");
         require(!isPermitted[troll], "permitted address cannot be a troll");
         require(trollType==SuperTroll || trollType==GeneralTroll || (trollType>4 && trollType<=trollTypeCount && trollType%2==1), "Invalid type");
-        require(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(msg.sender)))).recover(signature) == troll, "invalid troll signature");
+        require(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(msg.sender)))).recover(trollSignature) == troll, "invalid troll signature");
 
         uint256 trollProfileIndex = trollProfiles.length;
         trollProfileInv[troll] = trollProfileIndex;
         ownerTrolls[trollOwner].push(trollProfileIndex);
-        trollProfiles.push(TrollProfile({owner:trollOwner, troll:troll, trollType:trollType, nftCount:0}));
-        emit AddTroll(trollOwner, troll, trollProfileIndex, trollType);
+        trollProfiles.push(TrollProfile({owner:trollOwner, troll:troll, trollType:trollType, nonce: ownerNonce, signature: ownerSignature, nftCount:0}));
+        emit AddTroll(trollOwner, troll, trollProfileIndex, trollType, ownerNonce, ownerSignature);
     }
-    function updateTroll(uint256 trollProfileIndex, address newTroll, bytes calldata signature) external {
+    function updateTroll(uint256 trollProfileIndex, address newTroll, uint256 ownerNonce, bytes calldata ownerSignature, bytes calldata trollSignature) external {
         // check if owner has the troll's private key to sign message
         require(newTroll != address(0), "Invalid troll");
         require(trollProfileInv[newTroll] == 0, "newTroll already exists");
         require(!isPermitted[newTroll], "permitted address cannot be a troll");
         require(trollProfiles[trollProfileIndex].owner == msg.sender, "not from owner");
-        require(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(msg.sender)))).recover(signature) == newTroll, "invalid troll signature");
+        require(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(msg.sender)))).recover(trollSignature) == newTroll, "invalid troll signature");
 
         TrollProfile storage troll = trollProfiles[trollProfileIndex];
         address oldTroll = troll.troll;
         troll.troll = newTroll;
+        troll.nonce = ownerNonce;
+        troll.signature = ownerSignature;
         trollProfileInv[newTroll] = trollProfileIndex;
         delete trollProfileInv[oldTroll];
-        emit UpdateTroll(trollProfileIndex, oldTroll, newTroll);
+        emit UpdateTroll(trollProfileIndex, oldTroll, newTroll, ownerNonce, ownerSignature);
     }
 
     /*

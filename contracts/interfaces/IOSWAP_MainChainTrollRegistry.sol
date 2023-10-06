@@ -12,10 +12,11 @@ interface IOSWAP_MainChainTrollRegistry is IAuthorization, IERC721Receiver {
     event Shutdown(address indexed account);
     event Resume();
 
-    event AddTroll(address indexed owner, address indexed troll, uint256 indexed trollProfileIndex, TrollType trollType);
-    event UpdateTroll(uint256 indexed trollProfileIndex, address indexed oldTroll, address indexed newTroll);
+    event AddTroll(address indexed owner, address indexed troll, uint256 indexed trollProfileIndex, uint256 trollType, uint256 nonce, bytes signature);
+    event UpdateTroll(uint256 indexed trollProfileIndex, address indexed oldTroll, address indexed newTroll, uint256 nonce, bytes signature);
 
-    event UpdateNFT(I_TrollNFT indexed nft, TrollType trollType);
+    event AddTrollType(uint256 indexed trollType, bytes name);
+    event UpdateNFT(I_TrollNFT indexed nft, uint256 trollType);
     event BlockNftTokenId(I_TrollNFT indexed nft, uint256 indexed tokenId, bool blocked);
     event UpdateVotingManager(IOSWAP_VotingManager newVotingManager);
     event Upgrade(address newTrollRegistry);
@@ -23,13 +24,16 @@ interface IOSWAP_MainChainTrollRegistry is IAuthorization, IERC721Receiver {
     event StakeTroll(address indexed backer, uint256 indexed trollProfileIndex, I_TrollNFT nft, uint256 tokenId, uint256 stakesChange, uint256 stakesBalance);
     event UnstakeTroll(address indexed backer, uint256 indexed trollProfileIndex, I_TrollNFT nft, uint256 tokenId, uint256 stakesChange, uint256 stakesBalance);
 
-    enum TrollType {NotSpecified, SuperTroll, GeneralTroll, BlockedSuperTroll, BlockedGeneralTroll, ProjectTroll, BlockedProjectTroll}
     // trolls in Locked state can still participate in voting (to replicate events in main chain) in side chain, but cannot do cross chain transactions
+    // uint256 public constant SuperTroll = 1;
+    // uint256 public constant GeneralTroll = 2;
+    // uint256 public constant BlockedSuperTroll = 3;
+    // uint256 public constant BlockedGeneralTroll = 4;
 
     struct TrollProfile {
         address owner;
         address troll;
-        TrollType trollType;
+        uint256 trollType;
         uint256 nftCount;
     }
     struct StakeTo {
@@ -62,7 +66,7 @@ interface IOSWAP_MainChainTrollRegistry is IAuthorization, IERC721Receiver {
     function stakedByInv(I_TrollNFT nft, uint256 tokenId) external view returns (StakedInv memory takedByInv);   // stakedByInv[nft][tokenId] = {trollProfileIndex, idx2}
     function trollNft(uint256 index) external view returns (I_TrollNFT);
     function trollNftInv(I_TrollNFT nft) external view returns (uint256 trollNftInv);
-    function nftType(I_TrollNFT nft) external view returns (TrollType nftType);
+    function nftType(I_TrollNFT nft) external view returns (uint256 nftType);
     function blockedNftTokenId(I_TrollNFT nft, uint256 tokenId) external view returns (bool blockedNftTokenId); // blockedNftTokenId[nft][tokenId] = true if blocked
 
     function totalStake() external view returns (uint256 totalStake);
@@ -109,8 +113,11 @@ interface IOSWAP_MainChainTrollRegistry is IAuthorization, IERC721Receiver {
         address[] memory backers
     );
     function getTrollByNft(I_TrollNFT nft, uint256 tokenId) external view returns (address troll);
+    function getTrollProfileByAddress(address trollAddress) external view returns (TrollProfile memory troll);
 
-    function updateNft(I_TrollNFT nft, TrollType trolltype) external;
+    // admins' functions
+    function addTrollType(bytes calldata name) external;
+    function updateNft(I_TrollNFT nft, uint256 trolltype) external;
 
     /*
      * helper functions
@@ -121,14 +128,13 @@ interface IOSWAP_MainChainTrollRegistry is IAuthorization, IERC721Receiver {
     /*
      * functions called by owner
      */
-    function addTroll(address troll, TrollType trollType, bytes calldata signature) external;
+    function addTroll(address troll, uint256 trollType, bytes calldata signature) external;
     function updateTroll(uint256 trollProfileIndex, address newTroll, bytes calldata signature) external;
 
     /*
      * functions called by backer
      */
-    function stakeSuperTroll(uint256 trollProfileIndex, I_TrollNFT nft, uint256 tokenId) external;
-    function stakeGeneralTroll(uint256 trollProfileIndex, I_TrollNFT nft, uint256 tokenId) external;
+    function stakeTroll(uint256 trollProfileIndex, I_TrollNFT nft, uint256 tokenId) external;
 
     // add more stakes to the specified nft/tokenId
     function addStakesTroll(I_TrollNFT nft, uint256 tokenId, uint256 amount) external;

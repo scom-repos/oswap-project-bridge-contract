@@ -29,6 +29,7 @@ interface IOSWAP_SideChainProjectRegistry {
     function projectTrollsInv(uint256 projectId, uint256 projectTroll) external view returns (uint256 index);
     function usedNonce(uint256 nonce) external view returns (bool used);
     function usedProjectNonce(uint256 projectId, uint256 nonce) external view returns (bool used);
+    function usedOwnerNonce(address owner, uint256 nonce) external view returns (bool used);
 
     event AddTroll(address indexed troll, uint256 indexed trollProfileIndex);
     event UpdateTroll(uint256 indexed trollProfileIndex, address indexed troll);
@@ -41,12 +42,13 @@ interface IOSWAP_SideChainProjectRegistry {
     function isProjectTroll(uint256 projectId, uint256 trollProfileIndex) external view returns (bool isProjectTroll);
     function isProjectTrollByAddress(uint256 projectId, address troll) external view returns (bool _isProjectTroll);
     function hashTroll(uint256 trollProfileIndex, address troll, uint256 _nonce) external view returns (bytes32);
+    function hashAddTrollFromOwner(address newTroll, uint256 _nonce) external pure returns (bytes32);
     function hashUpdateTrollFromOwner(uint256 trollProfileIndex, address newTroll, uint256 _nonce) external view returns (bytes32);
     function hashNewVaultFormOwner(IERC20 asset, uint256[] calldata projectTrolls, uint256 _nonce) external view returns (bytes32);
     function hashNewVault(uint256 projectId, IERC20 asset, address owner, uint256[] calldata projectTrolls, uint256 _nonce) external view returns (bytes32);
     function hashUpdateProjectFromOwner(uint256 projectId, address newOwner, uint256[] calldata trollsToRemove, uint256[] calldata trollsToAdd, uint256 _nonce) external view returns (bytes32);
     function hashUpdateProject(uint256 projectId, address newOwner, uint256[] calldata trollsToRemove, uint256[] calldata trollsToAdd, uint256 _nonce) external view returns (bytes32);
-    function addTroll(bytes[] calldata signatures, uint256 trollProfileIndex, address troll, uint256 _nonce) external;
+    function addTroll(bytes[] calldata signatures, bytes calldata ownerSignature, uint256 trollProfileIndex, address owner, address troll, uint256 nonceForOwnerSignature, uint256 _nonce) external;
     function updateTroll(bytes[] calldata signatures, bytes calldata ownerSignature, uint256 trollProfileIndex, address newTroll, uint256 nonceForTrollSignature, uint256 _nonce) external;
     function newVault(bytes[] calldata trollsSignatures, bytes calldata ownerSignature, uint256 projectId, IERC20 asset, address owner, uint256[] calldata projectTrolls, uint256 nonceForOwnerSignature, uint256 _nonce) external;
     function updateProject(bytes[] calldata trollsSignatures, bytes calldata ownerSignature, uint256 projectId, address newOwner, uint256[] calldata trollsToRemove, uint256[] calldata trollsToAdd, uint256 nonceForOwnerSignature, uint256 _nonce) external;

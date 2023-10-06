@@ -45,6 +45,7 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
         trollRegistry = _trollRegistry;
         trollType = _trollType;
     }
+
     function paused() public view returns (bool) {
         return _paused;
     }
@@ -56,6 +57,7 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
         _paused = false;
         emit Resume();
     }
+
     function projectLength() external view returns (uint256 length) {
         length = projects.length;
     }
@@ -106,6 +108,7 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
         trolls = project.projectTrolls.length;
         chains = project.chainIds.length;
     }
+
     function _addProjectToken(uint256 projectId, Project storage project, Token calldata token, uint256 nonce, bytes calldata signature) internal {
         require(project.tokens[token.chainId] == address(0), "token already exists");
         project.chainIds.push(token.chainId);
@@ -130,7 +133,7 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
         i = 0;
         length = projectTrolls.length;
         while ( i < length ) {
-            (/*address owner*/, /*address troll*/, uint256 _trollType, /*uint256 nftCount*/) = trollRegistry.trollProfiles(projectTrolls[i]);
+            (/*address owner*/, /*address troll*/, uint256 _trollType, /*uint256 nonce*/, /*bytes signature*/, /*uint256 nftCount*/) = trollRegistry.trollProfiles(projectTrolls[i]);
             require(_trollType == trollType, "not a project troll");
             require(projectTrollsInv[projectId][projectTrolls[i]] == 0, "troll already exists");
             projectTrollsInv[projectId][projectTrolls[i]] = i;
@@ -161,6 +164,7 @@ contract OSWAP_MainChainProjectRegistry is Authorization {
         projects[projectId].newOwner = address(0);
         emit TransferProjectOwnership(projectId, projects[projectId].owner, nonce, signature);
     }
+ 
     function addTrolls(uint256 projectId, uint256[] calldata trollProfileIndex, uint256 nonce, bytes calldata signature) external {
         uint256 length = trollProfileIndex.length;
         if (length > 0) {
